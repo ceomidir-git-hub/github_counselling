@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Message</title>
+
+    <style>
+        *{
+            box-sizing:border-box;
+        }
+
+        html,
+        body{
+            width:100%;
+            height:29px;
+            margin:0;
+            overflow:hidden;
+            font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+            background:transparent;
+            color:#1e3a8a;
+        }
+
+        .messageViewport{
+            width:100%;
+            height:29px;
+            overflow:hidden;
+            position:relative;
+            display:flex;
+            align-items:center;
+        }
+
+        .messageTrack{
+            position:absolute;
+            left:100%;
+            display:inline-flex;
+            align-items:center;
+            gap:7px;
+            white-space:nowrap;
+            font-size:12px;
+            font-weight:900;
+            line-height:1.25;
+            animation:messageFlow 14s linear infinite;
+            will-change:transform;
+        }
+
+        .messageIcon{
+            flex:0 0 auto;
+            font-size:14px;
+        }
+
+        .messageText{
+            flex:0 0 auto;
+            word-break:keep-all;
+        }
+
+        @keyframes messageFlow{
+            0%{
+                transform:translateX(0);
+            }
+            100%{
+                transform:translateX(calc(-100% - 100vw));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!--
+        message.html 전용 파일입니다.
+        이 파일의 문구를 수정하면 index.html 메시지 창에 자동 반영됩니다.
+    -->
+
+    <div class="messageViewport">
+        <div class="messageTrack">
+            <div class="messageIcon">💬</div>
+            <div class="messageText">날씨정보 또는 오늘 일정을 보여 줄 영역입니다.</div>
+        </div>
+    </div>
+</body>
+</html>
