@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오늘의 메시지</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 27px;
+      overflow: hidden;
+      background: #0f172a;
+      font-family: Arial, "Noto Sans KR", sans-serif;
+    }
+
+    .ticker-wrap {
+      width: 100%;
+      height: 27px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      background: #0f172a;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+
+    .ticker-track {
+      display: inline-flex;
+      align-items: center;
+      gap: 48px;
+      height: 27px;
+      line-height: 27px;
+      font-size: 13px;
+      animation: tickerMove 18s linear infinite;
+      will-change: transform;
+    }
+
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .ticker-label {
+      font-weight: 700;
+      color: #bfdbfe;
+    }
+
+    @keyframes tickerMove {
+      0% {
+        transform: translateX(100vw);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="ticker-wrap">
+    <div class="ticker-track">
+      <span class="ticker-item">
+        <span>☀️</span>
+        <span class="ticker-label">날씨</span>
+        <span>서울 28℃ 맑음</span>
+      </span>
+
+      <span class="ticker-item">
+        <span>📅</span>
+        <span class="ticker-label">오늘 일정</span>
+        <span>09:00 생산회의 · 14:00 거래처 방문</span>
+      </span>
+
+      <span class="ticker-item">
+        <span>🤖</span>
+        <span class="ticker-label">AI 브리핑</span>
+        <span>오후 외근 전 이동 시간을 확인하세요.</span>
+      </span>
+    </div>
+  </div>
+</body>
+</html>
