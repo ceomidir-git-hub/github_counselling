@@ -108,7 +108,7 @@ button,input,select,textarea{
 .content{
     height:calc(100% - 92px - 84px);
     overflow:auto;
-    padding:6px 16px 108px;
+    padding:6px 16px 12px;
     scrollbar-width:none}
 
 /* 메시지 표시 영역: 현재 42px 기준 30% 추가 축소 → 29px */
@@ -455,12 +455,10 @@ button,input,select,textarea{
     font-size:35px}
 
 .input{
-    position:absolute;
-    left:0;
-    right:0;
-    bottom:84px;
-    padding:20px 16px 12px;
-    background:linear-gradient(180deg,rgba(243,247,252,0),#f3f7fc 22%)}
+    position:static;
+    padding:8px 0 0;
+    margin-top:8px;
+    background:none}
 
 .inputbar{
     display:flex;
@@ -516,9 +514,9 @@ button,input,select,textarea{
      <section class="content">
       <div class="banner">
        <!--
-        네트워크 접근 안내창이 뜨지 않도록 iframe을 제거하고
-        메시지 내용을 index.html 내부에 직접 표시합니다.
-        메시지.html은 별도 수정용 원본 파일로 유지합니다.
+        메시지 영역입니다.
+        ChatGPT 미리보기에서 네트워크 안내창이 뜨지 않도록 외부 호출 기능은 사용하지 않습니다.
+        별도 관리 파일은 message.html이며, 현재 화면에는 같은 내용을 직접 표시합니다.
        -->
        <div class="messageBox">
         <div class="messageIcon">
@@ -639,8 +637,7 @@ button,input,select,textarea{
         상담등록 실행
        </a>
       </div>
-     </section>
-     <div class="input">
+      <div class="input">
       <div class="inputbar">
        <input placeholder="예: 용탕 소화기 상태 불량 유사사례"/>
        <button class="send">
@@ -648,6 +645,8 @@ button,input,select,textarea{
        </button>
       </div>
      </div>
+     </section>
+     
      <nav class="tabs">
       <a class="tab active" href="index.html">
        🏠
