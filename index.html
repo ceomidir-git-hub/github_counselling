@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>상담 챗봇</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, "Noto Sans KR", sans-serif;
+      background: #f4f6f8;
+      color: #111827;
+    }
+
+    .app-wrap {
+      width: 100%;
+      min-height: 100vh;
+      background: #f4f6f8;
+    }
+
+    .main-header {
+      width: 100%;
+      height: 56px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.22);
+    }
+
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .brand-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .header-date {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 400;
+      opacity: 0.95;
+    }
+
+    .message-frame {
+      width: 100%;
+      height: 27px; /* 기존 38px × 70% = 26.6px → 27px 적용 */
+      border: none;
+      display: block;
+      overflow: hidden;
+      background: #0f172a;
+    }
+
+    .content-area {
+      padding: 24px;
+    }
+
+    .chat-box {
+      width: 100%;
+      min-height: 420px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    .chat-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .title-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      background: #eff6ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+    }
+
+    .chat-desc {
+      font-size: 14px;
+      color: #6b7280;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrap">
+    <header class="main-header">
+      <div class="brand-area">
+        <div class="brand-icon">💬</div>
+        <div>상담 챗봇</div>
+      </div>
+      <div class="header-date">
+        <span>📅</span>
+        <span id="todayDate"></span>
+      </div>
+    </header>
+
+    <!-- 메시지 자막 영역 -->
+    <iframe
+      src="message.html"
+      class="message-frame"
+      scrolling="no"
+      frameborder="0"
+      title="오늘의 메시지">
+    </iframe>
+
+    <main class="content-area">
+      <section class="chat-box">
+        <div class="chat-title">
+          <span class="title-icon">🤝</span>
+          <span>상담 화면</span>
+        </div>
+        <div class="chat-desc">
+          이 영역은 기존 상담 챗봇 본문 영역입니다.<br />
+          상단에는 message.html에서 불러온 날씨, 오늘의 일정, AI 브리핑이 오른쪽에서 왼쪽으로 흐릅니다.
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const todayDate = document.getElementById('todayDate');
+    const now = new Date();
+
+    todayDate.textContent = now.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      weekday: 'short'
+    });
+  </script>
+</body>
+</html>
