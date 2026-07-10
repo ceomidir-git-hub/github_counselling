@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ko">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   상담도우미
+  </title>
+  <style>
+   :root{
+    --blue:#0b4ea2;
+    --blue2:#1565d8;
+    --bg:#f3f7fc;
+    --card:#fff;
+    --ink:#111827;
+    --muted:#64748b;
+    --line:#e5e7eb;
+    --red:#ef4444;
+    --orange:#f97316;
+    --yellow:#eab308;
+    --green:#22c55e;
+    --violet:#7c3aed;
+    --shadow:0 18px 50px rgba(15,23,42,.18)}
+
+
+*{
+    box-sizing:border-box}
+
+body{
+    margin:0;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:linear-gradient(135deg,#eaf3ff,#fbfdff);
+    color:var(--ink)}
+
+button,input,select,textarea{
+    font:inherit}
+
+.wrap{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px 10px}
+
+.phone{
+    width:min(430px,100%);
+    height:900px;
+    background:#111;
+    border-radius:42px;
+    padding:12px;
+    box-shadow:var(--shadow)}
+
+.screen{
+    height:100%;
+    border-radius:32px;
+    background:var(--bg);
+    overflow:hidden;
+    position:relative}
+
+/* 상단 파란 프레임: 기존 132px 기준 약 30% 축소 */
+.top{
+    height:92px;
+    background:linear-gradient(135deg,#073b86,#0d63ce);
+    color:#fff;
+    padding:12px 18px 10px;
+    position:relative}
+
+.pill{
+    position:absolute;
+    left:50%;
+    top:12px;
+    transform:translateX(-50%);
+    width:116px;
+    height:27px;
+    background:#06152c;
+    border-radius:999px}
+
+.status{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    font-weight:800;
+    margin-bottom:9px}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px}
+
+.shield{
+    width:42px;
+    height:42px;
+    border-radius:15px;
+    background:linear-gradient(145deg,#dff6ff,#60a5fa);
+    display:grid;
+    place-items:center;
+    font-size:24px}
+
+.brand h1{
+    margin:0;
+    font-size:18px}
+
+.brand p{
+    margin:3px 0 0;
+    font-size:12px;
+    opacity:.85}
+
+.content{
+    height:calc(100% - 92px - 84px);
+    overflow:auto;
+    padding:6px 16px 12px;
+    scrollbar-width:none}
+
+/* 메시지 표시 영역: 현재 42px 기준 30% 추가 축소 → 29px */
+.banner{
+    background:#eef6ff;
+    border:1px solid #bfdbfe;
+    border-radius:16px;
+    padding:4px 10px;
+    font-size:12px;
+    color:#1e3a8a;
+    font-weight:850;
+    line-height:1.45;
+    margin-bottom:8px}
+
+.messageBox{
+    width:100%;
+    min-height:29px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:12px;
+    font-weight:900;
+    line-height:1.25}
+
+.messageIcon{
+    flex:0 0 auto;
+    font-size:14px}
+
+.messageText{
+    flex:1;
+    word-break:keep-all}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:9px;
+    margin:12px 0}
+
+.quick{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:17px;
+    padding:14px 6px;
+    box-shadow:0 6px 18px rgba(15,23,42,.06);
+    text-align:center;
+    cursor:pointer;
+    text-decoration:none;
+    color:var(--ink)}
+
+.quick .ico{
+    font-size:27px}
+
+.quick b{
+    display:block;
+    font-size:12px;
+    margin-top:6px}
+
+.title{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin:14px 0 9px;
+    font-weight:950}
+
+.title small{
+    color:var(--muted);
+    font-weight:800}
+
+.summary{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px}
+
+.stat{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:13px;
+    text-align:center;
+    padding:11px 4px}
+
+.stat small{
+    display:block;
+    color:var(--muted);
+    font-size:11px;
+    font-weight:850}
+
+.stat strong{
+    font-size:20px}
+
+.card,.form{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:18px;
+    box-shadow:0 8px 19px rgba(15,23,42,.06);
+    padding:12px;
+    margin:9px 0}
+
+.card h4{
+    margin:0 0 8px;
+    font-size:14px}
+
+.card p{
+    font-size:13px;
+    color:#475569;
+    line-height:1.55;
+    margin:5px 0}
+
+.badge{
+    display:inline-flex;
+    align-items:center;
+    padding:4px 8px;
+    border-radius:999px;
+    color:#fff;
+    font-size:11px;
+    font-weight:950}
+
+.g1,.s{
+    background:var(--red)}
+
+.g2,.a{
+    background:var(--orange)}
+
+.g3,.b{
+    background:var(--yellow);
+    color:#713f12}
+
+.g4,.c{
+    background:var(--green)}
+
+.ai{
+    background:var(--violet)}
+
+.row{
+    margin-bottom:8px}
+
+.row label{
+    display:block;
+    font-size:12px;
+    font-weight:950;
+    color:#334155;
+    margin-bottom:5px}
+
+.row input,.row select,.row textarea{
+    width:100%;
+    border:1px solid #dbe4f0;
+    border-radius:12px;
+    padding:11px;
+    background:#fff;
+    font-size:13px}
+
+.btn{
+    width:100%;
+    border:0;
+    border-radius:14px;
+    background:#1565d8;
+    color:#fff;
+    font-weight:950;
+    padding:12px;
+    cursor:pointer;
+    text-align:center;
+    text-decoration:none;
+    display:block}
+
+.btn.aiBtn{
+    background:linear-gradient(135deg,#7c3aed,#2563eb)}
+
+.btn.gray{
+    background:#f1f5f9;
+    color:#0f172a;
+    border:1px solid #dbe4f0}
+
+.meta{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px}
+
+.meta div{
+    background:#f8fafc;
+    border-radius:10px;
+    padding:7px;
+    font-size:11px}
+
+.meta b{
+    display:block;
+    color:#475569;
+    margin-bottom:2px}
+
+.chips{
+    display:flex;
+    gap:5px;
+    flex-wrap:wrap;
+    margin-top:8px}
+
+.chip{
+    font-size:11px;
+    font-weight:850;
+    padding:5px 8px;
+    border-radius:999px;
+    background:#eff6ff;
+    color:#1d4ed8}
+
+.noteBox{
+    background:#fff8e1;
+    border:1px solid #fde68a;
+    border-radius:14px;
+    padding:4px 10px;
+    font-size:12px;
+    line-height:1.5;
+    color:#713f12;
+    margin-top:8px}
+
+.photos{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:8px}
+
+.photoBox{
+    background:#f8fafc;
+    border:1px solid #dbe4f0;
+    border-radius:14px;
+    padding:7px;
+    cursor:pointer}
+
+.photoBox small{
+    display:block;
+    font-size:11px;
+    font-weight:900;
+    color:#475569;
+    margin-bottom:5px}
+
+.photoFrame{
+    height:78px;
+    border-radius:11px;
+    border:1px solid #d1d5db;
+    display:grid;
+    place-items:center;
+    position:relative;
+    overflow:hidden;
+    background:linear-gradient(145deg,#f8fafc,#dbeafe)}
+
+.photoFrame:before{
+    content:"📷";
+    font-size:28px}
+
+.photoFrame span{
+    position:absolute;
+    right:6px;
+    bottom:5px;
+    background:rgba(15,23,42,.72);
+    color:#fff;
+    border-radius:999px;
+    padding:3px 6px;
+    font-size:10px;
+    font-weight:900}
+
+.scorebar{
+    height:8px;
+    background:#ede9fe;
+    border-radius:999px;
+    overflow:hidden;
+    margin:7px 0}
+
+.scorebar i{
+    display:block;
+    height:100%;
+    background:linear-gradient(90deg,#7c3aed,#2563eb)}
+
+.chart{
+    display:flex;
+    align-items:end;
+    gap:8px;
+    height:140px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:18px 10px 28px;
+    margin:9px 0;
+    position:relative}
+
+.bar{
+    flex:1;
+    border-radius:9px 9px 2px 2px;
+    background:#60a5fa;
+    position:relative;
+    min-height:8px}
+
+.bar span{
+    position:absolute;
+    bottom:-22px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:10px;
+    font-weight:900;
+    color:#475569}
+
+.bar em{
+    position:absolute;
+    bottom:100%;
+    left:50%;
+    transform:translateX(-50%);
+    font-style:normal;
+    font-size:10px;
+    font-weight:900;
+    color:#1e3a8a}
+
+.tabs{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:84px;
+    background:#fff;
+    border-top:1px solid #e5e7eb;
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    padding:8px}
+
+.tab{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    color:#64748b;
+    font-size:11px;
+    font-weight:850;
+    cursor:pointer;
+    text-decoration:none}
+
+.tab.active{
+    color:#0b4ea2}
+
+.plus{
+    margin-top:-25px;
+    width:58px;
+    height:58px;
+    border-radius:50%;
+    background:#0b4ea2;
+    color:#fff;
+    border:5px solid #fff;
+    display:grid;
+    place-items:center;
+    font-size:35px}
+
+.input{
+    position:static;
+    padding:8px 0 0;
+    margin-top:8px;
+    background:none}
+
+.inputbar{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    background:#fff;
+    border:1px solid #e2e8f0;
+    border-radius:18px;
+    padding:9px 10px}
+
+.inputbar input{
+    border:0;
+    outline:0;
+    flex:1;
+    font-size:13px}
+
+.send{
+    width:38px;
+    height:38px;
+    border:0;
+    border-radius:50%;
+    background:#1565d8;
+    color:#fff;
+    font-size:17px}
+  </style>
+ </head>
+ <body>
+  <div class="wrap">
+   <main class="phone">
+    <div class="screen">
+     <header class="top">
+      <div class="pill">
+      </div>
+      <div class="status">
+       <span>
+        9:41
+       </span>
+       <span>
+        ●●● 5G 🔋
+       </span>
+      </div>
+      <div class="brand">
+       <div class="shield">
+        💬
+       </div>
+       <div>
+        <h1>
+         상담도우미
+        </h1>
+       </div>
+      </div>
+     </header>
+     <section class="content">
+      <div class="banner">
+       <!--
+        메시지 영역입니다.
+        아래 iframe이 message.html을 불러옵니다.
+        message.html의 문구를 수정하면 이 화면에 자동으로 반영됩니다.
+       -->
+       <iframe src="message.html" title="메시지" scrolling="no"
+        style="width:100%;height:29px;border:0;display:block;background:transparent;">
+       </iframe>
+      </div>
+      <div class="grid">
+       <a class="quick" href="consult_receipt_register.html">
+        <div class="ico">
+         🔎
+        </div>
+        <b>
+         예약등록
+        </b>
+       </a>
+       <a class="quick" href="Consultation_registration.html">
+        <div class="ico">
+         ✨
+        </div>
+        <b>
+         상담등록
+        </b>
+       </a>
+       <a class="quick" href="조회_저장.html">
+        <div class="ico">
+         📋
+        </div>
+        <b>
+         조회/저장
+        </b>
+       </a>
+       <a class="quick" href="통계.html">
+        <div class="ico">
+         📊
+        </div>
+        <b>
+         통계
+        </b>
+       </a>
+       <a class="quick" href="상담List.html">
+        <div class="ico">
+         👤
+        </div>
+        <b>
+         상담List
+        </b>
+       </a>
+       <a class="quick" href="스케줄.html">
+        <div class="ico">
+         🗓️
+        </div>
+        <b>
+         스케줄
+        </b>
+       </a>
+      </div>
+      <div class="title">
+       📌 오늘 요약
+       <small>
+        예시 데이터
+       </small>
+      </div>
+      <div class="summary">
+       <div class="stat">
+        <small>
+         전체
+        </small>
+        <strong>
+         545
+        </strong>
+       </div>
+       <div class="stat">
+        <small>
+         1등급
+        </small>
+        <strong>
+         208
+        </strong>
+       </div>
+       <div class="stat">
+        <small>
+         진행중
+        </small>
+        <strong>
+         50
+        </strong>
+       </div>
+       <div class="stat">
+        <small>
+         완료
+        </small>
+        <strong>
+         451
+        </strong>
+       </div>
+      </div>
+      <div class="title">
+       ✨ Copilot 추천 요약
+       <small>
+        유사사례
+       </small>
+      </div>
+      <div class="card">
+       <h4>
+        <span class="badge ai">
+         AI 추천
+        </span>
+        소화기 상태 불량 유사 위험
+       </h4>
+       <p>
+        점검항목, 점검대상, 발견상태 중심으로 유사사례를 추천하는 독립 화면을 추가했습니다.
+       </p>
+       <a class="btn aiBtn" href="Consultation_registration.html">
+        상담등록 실행
+       </a>
+      </div>
+      <div class="input">
+      <div class="inputbar">
+       <input placeholder="예: 용탕 소화기 상태 불량 유사사례"/>
+       <button class="send">
+        ➤
+       </button>
+      </div>
+     </div>
+     </section>
+     
+     <nav class="tabs">
+      <a class="tab active" href="index.html">
+       🏠
+       <span>
+        홈
+       </span>
+      </a>
+      <a class="tab" href="consult_receipt_register.html">
+       🔎
+       <span>
+        예약등록
+       </span>
+      </a>
+      <a class="tab" href="Consultation_registration.html">
+       <div class="plus">
+        +
+       </div>
+       <span>
+        상담등록
+       </span>
+      </a>
+      <a class="tab" href="조회_저장.html">
+       📊
+       <span>
+        조회/저장
+       </span>
+      </a>
+      <a class="tab" href="통계.html">
+       📈
+       <span>
+        통계
+       </span>
+      </a>
+     </nav>
+    </div>
+   </main>
+  </div>
+ </body>
+</html>
