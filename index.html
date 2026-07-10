@@ -141,14 +141,6 @@ button,input,select,textarea{
     flex:1;
     word-break:keep-all}
 
-.messageFrame{
-    width:100%;
-    height:29px;
-    border:0;
-    display:block;
-    background:transparent;
-    overflow:hidden}
-
 .grid{
     display:grid;
     grid-template-columns:repeat(3,1fr);
@@ -523,13 +515,20 @@ button,input,select,textarea{
       <div class="banner">
        <!--
         메시지 영역입니다.
-        index.html 화면 안에서 message.html을 자동으로 불러옵니다.
-        message.html 파일을 수정하면 이 영역에 반영됩니다.
+        ChatGPT 미리보기에서 네트워크 안내창이 뜨지 않도록 외부 호출 기능은 사용하지 않습니다.
+        별도 관리 파일은 message.html이며, 현재 화면에는 같은 내용을 직접 표시합니다.
        -->
-       <iframe class="messageFrame" src="message.html" title="공지 메시지" scrolling="no"></iframe>
+       <div class="messageBox">
+        <div class="messageIcon">
+         💬
+        </div>
+        <div class="messageText">
+         날씨정보 또는 오늘 일정을 보여 줄 영역입니다.
+        </div>
+       </div>
       </div>
       <div class="grid">
-       <a class="quick" href="예약등록.html">
+       <a class="quick" href="consult_receipt_register(1).html">
         <div class="ico">
          🔎
         </div>
@@ -655,7 +654,7 @@ button,input,select,textarea{
         홈
        </span>
       </a>
-      <a class="tab" href="예약등록.html">
+      <a class="tab" href="consult_receipt_register(1).html">
        🔎
        <span>
         예약등록
