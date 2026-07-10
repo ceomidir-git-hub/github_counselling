@@ -227,8 +227,8 @@
 
     .actions {
       display: grid;
-      grid-template-columns: 1.1fr 1.55fr 1fr 1.15fr;
-      gap: 6px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
       margin-top: 18px;
       padding-bottom: 6px;
     }
@@ -240,17 +240,15 @@
       background: #fff;
       color: #475569;
       font-weight: 950;
-      font-size: 12px;
+      font-size: 13px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 3px;
+      gap: 5px;
       text-decoration: none;
-      letter-spacing: -0.8px;
+      letter-spacing: -0.5px;
       white-space: nowrap;
-      min-width: 0;
-      padding: 0 3px;
     }
 
     .btn.primary {
@@ -325,14 +323,13 @@
       }
 
       .actions {
-        gap: 4px;
-        grid-template-columns: 1.1fr 1.6fr 1fr 1.15fr;
+        gap: 6px;
       }
 
       .btn {
         height: 46px;
-        font-size: 10.5px;
-        padding: 0 2px;
+        font-size: 12px;
+        padding: 0 4px;
       }
     }
 
@@ -344,13 +341,11 @@
       }
 
       .actions {
-        grid-template-columns: 1.05fr 1.65fr 1fr 1.15fr;
-        gap: 3px;
+        grid-template-columns: repeat(2, 1fr);
       }
 
       .btn {
-        font-size: 9.5px;
-        letter-spacing: -1px;
+        font-size: 13px;
       }
     }
 
@@ -498,6 +493,16 @@
                 </div>
 
                 <div class="form-row">
+                  <label for="gender">성별</label>
+                  <select id="gender" name="gender">
+                    <option selected disabled>선택하세요</option>
+                    <option>남성</option>
+                    <option>여성</option>
+                    <option>기타</option>
+                  </select>
+                </div>
+
+                <div class="form-row">
                   <label for="clientPhone">연락처</label>
                   <input id="clientPhone" name="client_phone" class="field" type="tel" placeholder="010-0000-0000" />
                 </div>
@@ -556,8 +561,8 @@
             </section>
 
             <div class="actions">
-              <button type="button" class="btn primary">▣ 신규등록</button>
-              <button type="button" class="btn outline-blue">✎ 조회/수정/저장</button>
+              <button type="button" class="btn primary">▣ 등록</button>
+              <button type="button" class="btn outline-blue">✎ 수정/저장</button>
               <button type="reset" class="btn">↻ 초기화</button>
               <a href="index.html" class="btn">⌂ 메인화면</a>
             </div>
