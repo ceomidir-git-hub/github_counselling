@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>상담 진행 리스트</title>
+  <style>
+    :root {
+      --primary: #155e75;
+      --primary-dark: #0e4c61;
+      --primary-light: #ecfeff;
+      --border: #d7e0e5;
+      --text: #1f2937;
+      --muted: #64748b;
+      --background: #f3f7f9;
+      --white: #ffffff;
+      --danger: #b42318;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      color: var(--text);
+      background: var(--background);
+    }
+
+    .page-wrap {
+      width: min(1500px, calc(100% - 32px));
+      margin: 28px auto;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .page-title {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .page-description {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .search-panel {
+      display: grid;
+      grid-template-columns: minmax(290px, 1.5fr) minmax(180px, 0.8fr) minmax(210px, 0.9fr) auto;
+      gap: 12px;
+      align-items: end;
+      padding: 18px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05);
+    }
+
+    .field-group {
+      min-width: 0;
+    }
+
+    .field-label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .date-range {
+      display: grid;
+      grid-template-columns: 1fr 24px 1fr;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .date-divider {
+      text-align: center;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      height: 42px;
+      padding: 0 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(21, 94, 117, 0.12);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    button {
+      height: 42px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-search {
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .btn-search:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-reset {
+      color: #334155;
+      background: #e8eef2;
+    }
+
+    .table-card {
+      overflow: hidden;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05);
+    }
+
+    .table-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #fbfdfe;
+      font-size: 14px;
+    }
+
+    .table-summary strong {
+      color: var(--primary-dark);
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1460px;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th,
+    td {
+      padding: 13px 10px;
+      border-right: 1px solid #e5ebef;
+      border-bottom: 1px solid #e5ebef;
+      text-align: center;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: 0;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      color: #fff;
+      background: var(--primary);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    tbody tr:hover {
+      background: var(--primary-light);
+    }
+
+    .col-no { width: 58px; }
+    .col-name { width: 95px; }
+    .col-gender { width: 72px; }
+    .col-age { width: 68px; }
+    .col-job { width: 110px; }
+    .col-phone { width: 135px; }
+    .col-address { width: 230px; }
+    .col-session { width: 92px; }
+    .col-target { width: 125px; }
+    .col-topic { width: 170px; }
+    .col-date { width: 118px; }
+
+    .empty-row td {
+      height: 220px;
+      color: var(--muted);
+      background: #fff;
+      font-size: 14px;
+    }
+
+    .required-note {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 980px) {
+      .page-wrap {
+        width: min(100% - 24px, 1500px);
+        margin: 20px auto;
+      }
+
+      .search-panel {
+        display: flex;
+        align-items: flex-end;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+      }
+
+      .search-panel > .field-group:nth-of-type(1) {
+        flex: 0 0 300px;
+      }
+
+      .search-panel > .field-group:nth-of-type(2) {
+        flex: 0 0 180px;
+      }
+
+      .search-panel > .field-group:nth-of-type(3) {
+        flex: 0 0 210px;
+      }
+
+      .button-group {
+        order: -1;
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        flex: 0 0 auto;
+        justify-content: flex-start;
+        padding-right: 8px;
+        background: var(--white);
+        box-shadow: 10px 0 12px -12px rgba(15, 23, 42, 0.45);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page-wrap {
+        width: calc(100% - 16px);
+        margin: 12px auto;
+      }
+
+      .page-title {
+        font-size: 22px;
+      }
+
+      .search-panel {
+        padding: 14px;
+      }
+
+      .date-range {
+        grid-template-columns: 1fr 18px 1fr;
+      }
+
+      .table-summary {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .page-wrap {
+        width: 100%;
+        margin: 0;
+      }
+
+      .search-panel,
+      .page-description {
+        display: none;
+      }
+
+      .table-card {
+        border: 0;
+        box-shadow: none;
+      }
+
+      .table-scroll {
+        overflow: visible;
+      }
+
+      table {
+        min-width: 0;
+        font-size: 9px;
+      }
+
+      th,
+      td {
+        padding: 5px 3px;
+        font-size: 9px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-wrap">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">상담 진행 리스트</h1>
+        <p class="page-description">상담이 진행된 내담자 정보를 기간, 이름, 전화번호로 조회합니다.</p>
+      </div>
+    </header>
+
+    <section class="search-panel" aria-label="상담 내역 검색 조건">
+      <div class="field-group">
+        <label class="field-label" for="startDate">기간</label>
+        <div class="date-range">
+          <input type="date" id="startDate" name="startDate" aria-label="조회 시작일" />
+          <span class="date-divider">~</span>
+          <input type="date" id="endDate" name="endDate" aria-label="조회 종료일" />
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="clientName">이름</label>
+        <input type="text" id="clientName" name="clientName" placeholder="이름 입력" autocomplete="off" />
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="phoneNumber">전화번호</label>
+        <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="전화번호 입력" autocomplete="off" />
+      </div>
+
+      <div class="button-group">
+        <button type="button" class="btn-search" id="searchButton">조회</button>
+        <button type="button" class="btn-reset" id="resetButton">초기화</button>
+      </div>
+    </section>
+
+    <section class="table-card" aria-label="상담 진행 내역">
+      <div class="table-summary">
+        <span>조회 결과 <strong id="resultCount">0</strong>건</span>
+        <span class="required-note">※ 개인정보는 권한이 있는 사용자만 열람해야 합니다.</span>
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-no">NO</th>
+              <th class="col-name">이름</th>
+              <th class="col-gender">성별</th>
+              <th class="col-age">나이</th>
+              <th class="col-job">직업</th>
+              <th class="col-phone">전화번호</th>
+              <th class="col-address">주소</th>
+              <th class="col-session">최종회기</th>
+              <th class="col-target">상담대상</th>
+              <th class="col-topic">상담주제</th>
+              <th class="col-date">최초상담일</th>
+              <th class="col-date">최종상담일</th>
+            </tr>
+          </thead>
+          <tbody id="consultListBody">
+            <tr class="empty-row">
+              <td colspan="12">등록된 상담 진행 내역이 없습니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // 현재 파일은 화면 구성용입니다.
+    // Supabase 조회 결과를 consultListBody에 삽입하면 목록을 표시할 수 있습니다.
+
+    const startDate = document.getElementById("startDate");
+    const endDate = document.getElementById("endDate");
+    const clientName = document.getElementById("clientName");
+    const phoneNumber = document.getElementById("phoneNumber");
+    const resetButton = document.getElementById("resetButton");
+
+    resetButton.addEventListener("click", () => {
+      startDate.value = "";
+      endDate.value = "";
+      clientName.value = "";
+      phoneNumber.value = "";
+      clientName.focus();
+    });
+  </script>
+</body>
+</html>
