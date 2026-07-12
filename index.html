@@ -85,6 +85,12 @@ button,input,select,textarea{
 .brand{
     display:flex;
     align-items:center;
+    justify-content:space-between;
+    gap:12px}
+
+.brandLeft{
+    display:flex;
+    align-items:center;
     gap:12px}
 
 .shield{
@@ -104,6 +110,35 @@ button,input,select,textarea{
     margin:3px 0 0;
     font-size:12px;
     opacity:.85}
+
+/* 로그인 버튼 (헤더 우측) */
+.loginBtn{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    gap:5px;
+    background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.55);
+    color:#fff;
+    font-size:11px;
+    font-weight:900;
+    padding:7px 11px;
+    border-radius:999px;
+    cursor:pointer;
+    white-space:nowrap;
+    backdrop-filter:blur(2px);
+    transition:background .15s ease}
+
+.loginBtn:active{
+    transform:translateY(1px)}
+
+.loginBtn:hover{
+    background:rgba(255,255,255,.28)}
+
+.loginBtn.isAdmin{
+    background:#fff;
+    color:var(--blue);
+    border-color:#fff}
 
 .content{
     height:calc(100% - 92px - 84px);
@@ -483,6 +518,101 @@ button,input,select,textarea{
     background:#1565d8;
     color:#fff;
     font-size:17px}
+
+/* ===== 관리자 로그인 모달 ===== */
+.modalOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:999;
+    padding:20px}
+
+.modalOverlay.open{
+    display:flex}
+
+.loginModal{
+    width:100%;
+    max-width:320px;
+    background:#fff;
+    border-radius:22px;
+    padding:22px 20px 20px;
+    box-shadow:0 24px 60px rgba(15,23,42,.35);
+    position:relative}
+
+.loginModal h3{
+    margin:0 0 4px;
+    font-size:17px;
+    color:var(--blue)}
+
+.loginModal p.sub{
+    margin:0 0 16px;
+    font-size:12px;
+    color:var(--muted)}
+
+.modalClose{
+    position:absolute;
+    right:14px;
+    top:14px;
+    width:28px;
+    height:28px;
+    border:0;
+    background:#f1f5f9;
+    border-radius:50%;
+    color:#475569;
+    font-size:15px;
+    cursor:pointer}
+
+.loginModal .row{
+    margin-bottom:10px}
+
+.loginModal .row label{
+    font-size:11px;
+    color:#334155;
+    font-weight:900;
+    margin-bottom:4px}
+
+.loginModal .row input{
+    border:1px solid #dbe4f0;
+    border-radius:11px;
+    padding:11px;
+    width:100%;
+    font-size:13px}
+
+.loginModal .errorMsg{
+    display:none;
+    background:#fef2f2;
+    border:1px solid #fecaca;
+    color:#b91c1c;
+    font-size:11px;
+    font-weight:800;
+    border-radius:10px;
+    padding:7px 9px;
+    margin-bottom:10px}
+
+.loginModal .errorMsg.show{
+    display:block}
+
+.loginModal .btnRow{
+    display:flex;
+    gap:8px;
+    margin-top:14px}
+
+.loginModal .btnRow .btn{
+    padding:11px}
+
+.loginModal .btnRow .cancelBtn{
+    background:#f1f5f9;
+    color:#0f172a}
+
+.loginModal .noteMini{
+    margin-top:12px;
+    font-size:10px;
+    color:#94a3b8;
+    line-height:1.5;
+    text-align:center}
   </style>
  </head>
  <body>
@@ -501,14 +631,20 @@ button,input,select,textarea{
        </span>
       </div>
       <div class="brand">
-       <div class="shield">
-        💬
+       <div class="brandLeft">
+        <div class="shield">
+         💬
+        </div>
+        <div>
+         <h1>
+          상담도우미
+         </h1>
+        </div>
        </div>
-       <div>
-        <h1>
-         상담도우미
-        </h1>
-       </div>
+       <button class="loginBtn" id="loginTrigger" type="button" onclick="openLoginModal()">
+        <span id="loginIcon">🔑</span>
+        <span id="loginLabel">로그인</span>
+       </button>
       </div>
      </header>
      <section class="content">
@@ -676,8 +812,100 @@ button,input,select,textarea{
        </span>
       </a>
      </nav>
+
+     <!-- 관리자 로그인 모달 (UI 전용, 실제 인증은 추후 Supabase Auth 연동 예정) -->
+     <div class="modalOverlay" id="loginModalOverlay">
+      <div class="loginModal">
+       <button class="modalClose" type="button" onclick="closeLoginModal()">✕</button>
+       <h3>관리자 로그인</h3>
+       <p class="sub">로그인하면 등록·수정·조회 기능이 열립니다.</p>
+
+       <div class="errorMsg" id="loginError">아이디 또는 비밀번호를 확인해주세요.</div>
+
+       <div class="row">
+        <label for="loginId">아이디</label>
+        <input id="loginId" type="text" placeholder="아이디를 입력하세요" autocomplete="username" />
+       </div>
+       <div class="row">
+        <label for="loginPw">비밀번호</label>
+        <input id="loginPw" type="password" placeholder="비밀번호를 입력하세요" autocomplete="current-password" />
+       </div>
+
+       <div class="btnRow">
+        <button class="btn cancelBtn" type="button" onclick="closeLoginModal()">취소</button>
+        <button class="btn" type="button" onclick="submitLogin()">로그인</button>
+       </div>
+
+       <p class="noteMini">※ 현재는 화면(UI) 시안 단계이며, 실제 로그인 검증은 Supabase Auth 연동 후 적용됩니다.</p>
+      </div>
+     </div>
+
     </div>
    </main>
   </div>
+
+  <script>
+    // ===== 관리자 로그인 모달 제어 (UI 전용 / 실제 인증 로직은 추후 Supabase Auth로 교체) =====
+    const loginOverlay = document.getElementById('loginModalOverlay');
+    const loginTrigger = document.getElementById('loginTrigger');
+    const loginIcon = document.getElementById('loginIcon');
+    const loginLabel = document.getElementById('loginLabel');
+    const loginError = document.getElementById('loginError');
+
+    function openLoginModal(){
+      // 이미 관리자 상태면 모달 대신 로그아웃 확인
+      if (sessionStorage.getItem('isAdmin') === 'true') {
+        if (confirm('로그아웃 하시겠습니까?')) {
+          sessionStorage.removeItem('isAdmin');
+          updateLoginButton();
+        }
+        return;
+      }
+      loginError.classList.remove('show');
+      document.getElementById('loginId').value = '';
+      document.getElementById('loginPw').value = '';
+      loginOverlay.classList.add('open');
+    }
+
+    function closeLoginModal(){
+      loginOverlay.classList.remove('open');
+    }
+
+    function submitLogin(){
+      const id = document.getElementById('loginId').value.trim();
+      const pw = document.getElementById('loginPw').value.trim();
+
+      // TODO: Supabase Auth 연동 시 아래 임시 검증 로직을 실제 인증 호출로 교체
+      if (!id || !pw) {
+        loginError.classList.add('show');
+        return;
+      }
+
+      sessionStorage.setItem('isAdmin', 'true');
+      updateLoginButton();
+      closeLoginModal();
+    }
+
+    function updateLoginButton(){
+      const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+      if (isAdmin) {
+        loginTrigger.classList.add('isAdmin');
+        loginIcon.textContent = '👤';
+        loginLabel.textContent = '관리자';
+      } else {
+        loginTrigger.classList.remove('isAdmin');
+        loginIcon.textContent = '🔑';
+        loginLabel.textContent = '로그인';
+      }
+    }
+
+    // 모달 바깥 클릭 시 닫기
+    loginOverlay.addEventListener('click', (e) => {
+      if (e.target === loginOverlay) closeLoginModal();
+    });
+
+    // 브라우저 창을 닫으면 세션이 종료되므로(sessionStorage 특성) 자동 로그아웃됩니다.
+    updateLoginButton();
+  </script>
  </body>
 </html>
