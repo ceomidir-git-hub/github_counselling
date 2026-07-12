@@ -344,10 +344,14 @@
               <h2 class="section-title">1. 접수 정보</h2>
 
               <div class="form-grid">
-                <div class="form-row">
-                  <label for="receivedAt">접수일시</label>
-                  <input id="receivedAt" class="field" type="text" readonly />
+                <div class="form-row split-2">
+                  <label for="receivedDate">접수일시</label>
+                  <input id="receivedDate" class="field" type="date" />
+                  <select id="receivedTime">
+                    <option value="" selected disabled>시간 선택</option>
+                  </select>
                 </div>
+                <div class="preview-line" id="receivedPreview">접수일시를 선택하면 여기에 표시됩니다.</div>
 
                 <div class="form-row split-2">
                   <label for="reservationDate">예약일</label>
@@ -393,10 +397,7 @@
                 <div class="form-row">
                   <label for="gender">성별</label>
                   <select id="gender">
-                    <option selected disabled value="">선택하세요</option>
-                    <option>남성</option>
-                    <option>여성</option>
-                    <option>기타</option>
+                    <option selected disabled value="">불러오는 중...</option>
                   </select>
                 </div>
 
@@ -424,27 +425,14 @@
                 <div class="form-row">
                   <label for="consultationTarget">상담대상</label>
                   <select id="consultationTarget">
-                    <option selected disabled value="">선택하세요</option>
-                    <option>개인상담</option>
-                    <option>집단상담</option>
-                    <option>가족상담</option>
-                    <option>커플부부상담</option>
-                    <option>기타</option>
+                    <option selected disabled value="">불러오는 중...</option>
                   </select>
                 </div>
 
                 <div class="form-row">
                   <label for="consultationTopic">상담주제</label>
                   <select id="consultationTopic">
-                    <option selected disabled value="">선택하세요</option>
-                    <option>심리/정서상담</option>
-                    <option>진로/직업상담</option>
-                    <option>가족상담</option>
-                    <option>비행/중독상담</option>
-                    <option>기업상담</option>
-                    <option>대인관계</option>
-                    <option>부부상담</option>
-                    <option>기타</option>
+                    <option selected disabled value="">불러오는 중...</option>
                   </select>
                 </div>
 
@@ -472,22 +460,73 @@
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // ===== Supabase 연결 설정 =====
-    const SUPABASE_URL = "https://fafdxaifluftnertbpvr.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_RNEAVQD2wZRtZojxVU11aA_Dacmf7db";
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const TABLE_NAME = "db_sina_counsel";
+    // ===== 0) UI 초기화는 Supabase 연결 성공 여부와 무관하게 항상 먼저 실행 =====
+    const DAY_KR = ["일", "월", "화", "수", "목", "금", "토"];
 
-    // ===== 1) 접수일시: 현재 시각 자동 표시 (KST) =====
-    const receivedAtField = document.getElementById("receivedAt");
-    const nowDate = new Date();
-    receivedAtField.value = nowDate.toLocaleString("ko-KR", {
-      timeZone: "Asia/Seoul",
-      year: "numeric", month: "2-digit", day: "2-digit",
-      hour: "2-digit", minute: "2-digit", hour12: false
-    });
+    // 1) 접수일시: 날짜+시간 드롭다운 (기본값 = 현재 KST 시각, 수정 가능)
+    const receivedDateEl = document.getElementById("receivedDate");
+    const receivedTimeEl = document.getElementById("receivedTime");
+    const receivedPreviewEl = document.getElementById("receivedPreview");
 
-    // ===== 2) 연락처 자동 하이픈 포맷 (000-0000-0000) =====
+    function getNowKSTParts() {
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Seoul",
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hour12: false
+      }).formatToParts(new Date());
+      const map = {};
+      parts.forEach(p => map[p.type] = p.value);
+      return { date: `${map.year}-${map.month}-${map.day}`, hour: parseInt(map.hour, 10), minute: parseInt(map.minute, 10) };
+    }
+
+    // 시간 옵션 생성: 00:00 ~ 23:50, 10분 단위 (접수는 하루 중 언제든 가능)
+    (function buildReceivedTimeOptions() {
+      for (let h = 0; h <= 23; h++) {
+        for (let m of [0, 10, 20, 30, 40, 50]) {
+          const hh = String(h).padStart(2, "0");
+          const mm = String(m).padStart(2, "0");
+          const ampm = h < 12 ? "오전" : "오후";
+          const opt = document.createElement("option");
+          opt.value = `${hh}:${mm}`;
+          opt.textContent = `${hh}:${mm} (${ampm})`;
+          receivedTimeEl.appendChild(opt);
+        }
+      }
+    })();
+
+    function setReceivedDefaultToNow() {
+      const nowKST = getNowKSTParts();
+      const roundedMinute = Math.floor(nowKST.minute / 10) * 10;
+      receivedDateEl.value = nowKST.date;
+      receivedTimeEl.value = `${String(nowKST.hour).padStart(2, "0")}:${String(roundedMinute).padStart(2, "0")}`;
+      updateReceivedPreview();
+    }
+
+    function updateReceivedPreview() {
+      const dateVal = receivedDateEl.value;
+      const timeVal = receivedTimeEl.value;
+      if (!dateVal || !timeVal) {
+        receivedPreviewEl.textContent = "접수일시를 선택하면 여기에 표시됩니다.";
+        return;
+      }
+      const d = new Date(dateVal + "T00:00:00");
+      const dayLabel = DAY_KR[d.getDay()];
+      const ampm = parseInt(timeVal.split(":")[0], 10) < 12 ? "오전" : "오후";
+      receivedPreviewEl.textContent = `${dateVal}(${dayLabel}),${timeVal}(${ampm})`;
+    }
+    receivedDateEl.addEventListener("change", updateReceivedPreview);
+    receivedTimeEl.addEventListener("change", updateReceivedPreview);
+
+    function getReceivedISO() {
+      const dateVal = receivedDateEl.value;
+      const timeVal = receivedTimeEl.value;
+      if (!dateVal || !timeVal) return null;
+      return new Date(`${dateVal}T${timeVal}:00+09:00`).toISOString();
+    }
+
+    setReceivedDefaultToNow();
+
+    // 2) 연락처 자동 하이픈 포맷 (000-0000-0000)
     function attachPhoneFormatter(inputEl) {
       inputEl.addEventListener("input", () => {
         let digits = inputEl.value.replace(/\D/g, "").slice(0, 11);
@@ -509,7 +548,7 @@
       return /^\d{3}-\d{3,4}-\d{4}$/.test(value);
     }
 
-    // ===== 3) 생년월일 자동 마침표 포맷 (0000.00.00) =====
+    // 3) 생년월일 자동 마침표 포맷 (0000.00.00)
     const birthDateEl = document.getElementById("birthDate");
     birthDateEl.addEventListener("input", () => {
       let digits = birthDateEl.value.replace(/\D/g, "").slice(0, 8);
@@ -539,7 +578,7 @@
       return value.replaceAll(".", "-");
     }
 
-    // ===== 4) 예약일: 날짜 + 시간 선택 → 자동 표시 + ISO 변환 =====
+    // 4) 예약일: 날짜 + 시간 선택 → 자동 표시 + ISO 변환
     const reservationDateEl = document.getElementById("reservationDate");
     const reservationTimeEl = document.getElementById("reservationTime");
     const reservationPreviewEl = document.getElementById("reservationPreview");
@@ -559,8 +598,6 @@
         }
       }
     })();
-
-    const DAY_KR = ["일", "월", "화", "수", "목", "금", "토"];
 
     function updateReservationPreview() {
       const dateVal = reservationDateEl.value;
@@ -585,14 +622,14 @@
       return new Date(`${dateVal}T${timeVal}:00+09:00`).toISOString();
     }
 
-    // ===== 5) 상세 상담내용 글자수 카운터 =====
+    // 5) 상세 상담내용 글자수 카운터
     const details = document.getElementById("details");
     const detailsCounter = document.getElementById("detailsCounter");
     details.addEventListener("input", () => {
       detailsCounter.textContent = `${details.value.length} / 1000`;
     });
 
-    // ===== 6) 상태 메시지 표시 =====
+    // 6) 상태 메시지 표시
     const statusMsgEl = document.getElementById("statusMsg");
     function showStatus(type, message) {
       statusMsgEl.className = "statusMsg show " + type;
@@ -609,13 +646,63 @@
       else el.classList.remove("invalid");
     }
 
-    // ===== 7) 등록(제출) 처리 =====
+    // ===== 7) Supabase 연결: 실패해도 위 UI 동작에는 영향 없도록 별도 처리 =====
+    const SUPABASE_URL = "https://fafdxaifluftnertbpvr.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_RNEAVQD2wZRtZojxVU11aA_Dacmf7db";
+    let sb = null;
+    let sbInitError = null;
+    try {
+      if (!window.supabase) {
+        throw new Error("Supabase 라이브러리를 불러오지 못했습니다 (네트워크/CDN 차단 가능성).");
+      }
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (err) {
+      sbInitError = err;
+      console.error("Supabase 초기화 실패:", err);
+    }
+    const TABLE_NAME = "db_sina_counsel";
+
+    // ===== 7-1) lookup 테이블(sex_codes, counsel_client_type, counsel_topic)에서 옵션 동적 로딩 =====
+    async function loadLookupOptions(tableName, selectEl) {
+      if (!sb) {
+        selectEl.innerHTML = `<option selected disabled value="">목록을 불러올 수 없습니다</option>`;
+        return;
+      }
+      const { data, error } = await sb
+        .from(tableName)
+        .select("code, name, sort_order")
+        .eq("active", true)
+        .order("sort_order", { ascending: true });
+
+      if (error || !data || data.length === 0) {
+        console.error(tableName + " 로딩 실패:", error);
+        selectEl.innerHTML = `<option selected disabled value="">목록을 불러올 수 없습니다</option>`;
+        return;
+      }
+
+      let html = `<option selected disabled value="">선택하세요</option>`;
+      data.forEach((row) => {
+        html += `<option value="${row.code}">${row.name}</option>`;
+      });
+      selectEl.innerHTML = html;
+    }
+
+    loadLookupOptions("sex_codes", document.getElementById("gender"));
+    loadLookupOptions("counsel_client_type", document.getElementById("consultationTarget"));
+    loadLookupOptions("counsel_topic", document.getElementById("consultationTopic"));
+
+    // ===== 8) 등록(제출) 처리 =====
     const form = document.getElementById("consultForm");
     const submitBtn = document.getElementById("submitBtn");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       hideStatus();
+
+      if (!sb) {
+        showStatus("error", "저장 서버(Supabase) 연결에 실패했습니다. 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.");
+        return;
+      }
 
       const receptionistName = document.getElementById("receptionistName").value.trim();
       const receptionistPhone = receptionistPhoneEl.value.trim();
@@ -661,13 +748,18 @@
       markInvalid(reservationTimeEl, !appointmentISO);
       if (!appointmentISO) hasError = true;
 
+      const receivedISO = getReceivedISO();
+      markInvalid(receivedDateEl, !receivedISO);
+      markInvalid(receivedTimeEl, !receivedISO);
+      if (!receivedISO) hasError = true;
+
       if (hasError) {
         showStatus("error", "입력값을 다시 확인해주세요. 빨간색으로 표시된 항목을 채워주세요.");
         return;
       }
 
       const payload = {
-        received_at: new Date().toISOString(),
+        received_at: receivedISO,
         appointment_at: appointmentISO,
         receptionist_name: receptionistName || null,
         receptionist_phone: receptionistPhone || null,
@@ -700,11 +792,7 @@
       form.reset();
       detailsCounter.textContent = "0 / 1000";
       reservationPreviewEl.textContent = "예약일과 시간을 선택하면 여기에 표시됩니다.";
-      receivedAtField.value = new Date().toLocaleString("ko-KR", {
-        timeZone: "Asia/Seoul",
-        year: "numeric", month: "2-digit", day: "2-digit",
-        hour: "2-digit", minute: "2-digit", hour12: false
-      });
+      setReceivedDefaultToNow();
     });
   </script>
 </body>
