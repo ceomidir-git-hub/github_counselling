@@ -677,13 +677,31 @@
     }
 
     const row = data[0];
+    function formatDateTimeKR(iso){
+      if (!iso) return null;
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Seoul",
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hour12: false
+      }).formatToParts(new Date(iso));
+      const map = {};
+      parts.forEach(p => map[p.type] = p.value);
+      const dateStr = `${map.year}-${map.month}-${map.day}`;
+      const dayLabel = DAY_KR[new Date(dateStr + "T00:00:00").getDay()];
+      const hour24 = parseInt(map.hour, 10);
+      const minute = parseInt(map.minute, 10);
+      const ampm = hour24 < 12 ? "오전" : "오후";
+      const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+      const timeStr = minute > 0 ? `${hour12}시${minute}분` : `${hour12}시`;
+      return `${dateStr}(${dayLabel})_${timeStr}(${ampm})`;
+    }
     const rows = [
-      ["접수일시", row.received_at],
+      ["접수일시", formatDateTimeKR(row.received_at)],
       ["접수자명", row.receptionist_name],
       ["접수자 연락처", row.receptionist_phone],
       ["관계", row.relationship],
       ["접수상담내용", row.receptionist_content],
-      ["예약일", row.appointment_at],
+      ["예약일", formatDateTimeKR(row.appointment_at)],
       ["생년월일", row.Birth_date],
       ["직업", row.client_job],
     ];
