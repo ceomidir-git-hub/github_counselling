@@ -468,14 +468,15 @@
 
   // ===== 0) 로그인 가드: 관리자 로그인 상태가 아니면 메인화면으로 돌려보냄 =====
   async function guardLoginOrRedirect(){
-    if (!sb) return; // 연결 자체가 안 되면 등록 시점에 별도로 에러 처리
+    if (!sb) return false; // 연결 자체가 안 되면 등록 시점에 별도로 에러 처리
     const { data } = await sb.auth.getSession();
     if (!data.session) {
       alert("관리자 로그인이 필요한 화면입니다. 메인화면으로 이동합니다.");
       window.location.href = "index.html";
+      return false;
     }
+    return true;
   }
-  guardLoginOrRedirect();
 
   // ===== 1) 연락처 자동 하이픈 포맷 (000-0000-0000) =====
   const clientPhoneEl = document.getElementById("clientPhone");
@@ -616,10 +617,13 @@
     data.forEach(row => { html += `<option value="${row.code}">${row.name}</option>`; });
     selectEl.innerHTML = html;
   }
-  loadLookupOptions("sex_codes", document.getElementById("gender"));
-  loadLookupOptions("job_codes", document.getElementById("job"));
-  loadLookupOptions("counsel_client_type", document.getElementById("consultationTarget"));
-  loadLookupOptions("counsel_topic", document.getElementById("consultationTopic"));
+  (async function initPage(){
+    await guardLoginOrRedirect();
+    loadLookupOptions("sex_codes", document.getElementById("gender"));
+    loadLookupOptions("job_codes", document.getElementById("job"));
+    loadLookupOptions("counsel_client_type", document.getElementById("consultationTarget"));
+    loadLookupOptions("counsel_topic", document.getElementById("consultationTopic"));
+  })();
 
   // ===== 6) 상태 메시지 =====
   const statusMsgEl = document.getElementById("statusMsg");
