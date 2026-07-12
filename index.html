@@ -823,8 +823,8 @@ button,input,select,textarea{
        <div class="errorMsg" id="loginError">아이디 또는 비밀번호를 확인해주세요.</div>
 
        <div class="row">
-        <label for="loginId">아이디</label>
-        <input id="loginId" type="text" placeholder="아이디를 입력하세요" autocomplete="username" />
+        <label for="loginId">이메일</label>
+        <input id="loginId" type="email" placeholder="이메일을 입력하세요" autocomplete="email" />
        </div>
        <div class="row">
         <label for="loginPw">비밀번호</label>
@@ -875,7 +875,7 @@ button,input,select,textarea{
       const id = document.getElementById('loginId').value.trim();
       const pw = document.getElementById('loginPw').value.trim();
 
-      // TODO: Supabase Auth 연동 시 아래 임시 검증 로직을 실제 인증 호출로 교체
+      // TODO: Supabase Auth 연동 시 아래 임시 검증 로직을 실제 인증 호출(이메일+비밀번호)로 교체
       if (!id || !pw) {
         loginError.classList.add('show');
         return;
