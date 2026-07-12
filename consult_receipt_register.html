@@ -18,14 +18,13 @@
       --radius: 18px;
       --field-height: 46px;
       --label-width: 136px;
+      --green: #16a34a;
+      --red: #dc2626;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
-    html,
-    body {
+    html, body {
       margin: 0;
       min-height: 100%;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -33,12 +32,7 @@
       color: var(--text);
     }
 
-    button,
-    input,
-    select,
-    textarea {
-      font: inherit;
-    }
+    button, input, select, textarea { font: inherit; }
 
     .page {
       min-height: 100vh;
@@ -88,15 +82,9 @@
       border-radius: 999px;
     }
 
-    .status span {
-      position: relative;
-      z-index: 1;
-      font-size: 13px;
-    }
+    .status span { position: relative; z-index: 1; font-size: 13px; }
 
-    .container {
-      padding: 18px 18px 24px;
-    }
+    .container { padding: 18px 18px 24px; }
 
     .page-title {
       margin: 0 0 18px;
@@ -124,16 +112,17 @@
       letter-spacing: -0.4px;
     }
 
-    .form-grid {
-      display: grid;
-      gap: 10px;
-    }
+    .form-grid { display: grid; gap: 10px; }
 
     .form-row {
       display: grid;
       grid-template-columns: 96px 1fr;
       gap: 10px;
       align-items: center;
+    }
+
+    .form-row.split-2 {
+      grid-template-columns: 96px 1fr 1fr;
     }
 
     label {
@@ -143,9 +132,7 @@
       letter-spacing: -0.3px;
     }
 
-    .field,
-    select,
-    textarea {
+    .field, select, textarea {
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 9px;
@@ -155,11 +142,15 @@
       transition: border 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .field,
-    select {
+    .field, select {
       height: var(--field-height);
       padding: 0 12px;
       font-size: 14px;
+    }
+
+    .field[readonly] {
+      background: #f1f5f9;
+      color: #64748b;
     }
 
     select {
@@ -180,39 +171,33 @@
       line-height: 1.5;
     }
 
-    .field:focus,
-    select:focus,
-    textarea:focus {
+    .field:focus, select:focus, textarea:focus {
       border-color: var(--blue);
       box-shadow: 0 0 0 3px rgba(11, 99, 229, 0.12);
     }
 
-    .field::placeholder,
-    textarea::placeholder {
-      color: #94a3b8;
+    .field::placeholder, textarea::placeholder { color: #94a3b8; }
+
+    .hint {
+      grid-column: 2 / -1;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: -4px;
     }
 
-    .field-wrap {
-      position: relative;
+    .preview-line {
+      grid-column: 2 / -1;
+      font-size: 13px;
+      font-weight: 850;
+      color: var(--blue);
+      background: #eef4ff;
+      border: 1px solid #d7e6ff;
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-top: 2px;
     }
 
-    .field-wrap .field {
-      padding-right: 38px;
-    }
-
-    .icon {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #475569;
-      font-size: 15px;
-      pointer-events: none;
-    }
-
-    .textarea-wrap {
-      position: relative;
-    }
+    .textarea-wrap { position: relative; }
 
     .counter {
       position: absolute;
@@ -258,172 +243,85 @@
       box-shadow: 0 8px 18px rgba(11, 99, 229, 0.25);
     }
 
-    .btn.outline-blue {
-      border-color: var(--blue);
-      color: var(--blue);
+    .btn.primary:disabled {
+      opacity: .6;
+      cursor: not-allowed;
     }
 
-    .btn:active {
-      transform: translateY(1px);
+    .btn:active { transform: translateY(1px); }
+
+    .statusMsg {
+      display: none;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 850;
+      margin-bottom: 12px;
     }
 
-    /* 일반 핸드폰 기준 */
+    .statusMsg.show { display: block; }
+
+    .statusMsg.success {
+      background: #ecfdf3;
+      border: 1px solid #bbf7d0;
+      color: var(--green);
+    }
+
+    .statusMsg.error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: var(--red);
+    }
+
+    .field.invalid, select.invalid {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.10);
+    }
+
     @media (max-width: 480px) {
-      .page {
-        padding: 0;
-        background: #fff;
-      }
-
-      .phone {
-        width: 100%;
-        min-height: 100vh;
-        padding: 0;
-        border-radius: 0;
-        background: #fff;
-        box-shadow: none;
-      }
-
-      .screen {
-        min-height: 100vh;
-        border-radius: 0;
-      }
-
-      .container {
-        padding: 14px 14px 22px;
-      }
-
-      .page-title {
-        font-size: 28px;
-        margin-bottom: 16px;
-      }
-
-      .section {
-        padding: 15px 12px;
-        border-radius: 15px;
-      }
-
-      .form-row {
-        grid-template-columns: 100px 1fr;
-        gap: 8px;
-      }
-
-      label {
-        font-size: 13px;
-      }
-
-      .field,
-      select {
-        height: 44px;
-        font-size: 13px;
-      }
-
-      textarea {
-        min-height: 108px;
-        font-size: 13px;
-      }
-
-      .actions {
-        gap: 6px;
-      }
-
-      .btn {
-        height: 46px;
-        font-size: 12px;
-        padding: 0 4px;
-      }
+      .page { padding: 0; background: #fff; }
+      .phone { width: 100%; min-height: 100vh; padding: 0; border-radius: 0; background: #fff; box-shadow: none; }
+      .screen { min-height: 100vh; border-radius: 0; }
+      .container { padding: 14px 14px 22px; }
+      .page-title { font-size: 28px; margin-bottom: 16px; }
+      .section { padding: 15px 12px; border-radius: 15px; }
+      .form-row { grid-template-columns: 100px 1fr; gap: 8px; }
+      .form-row.split-2 { grid-template-columns: 100px 1fr 1fr; }
+      label { font-size: 13px; }
+      .field, select { height: 44px; font-size: 13px; }
+      textarea { min-height: 108px; font-size: 13px; }
+      .actions { gap: 6px; }
+      .btn { height: 46px; font-size: 12px; padding: 0 4px; }
     }
 
-    /* 좁은 핸드폰 */
     @media (max-width: 360px) {
-      .form-row {
-        grid-template-columns: 1fr;
-        gap: 5px;
-      }
-
-      .actions {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .btn {
-        font-size: 13px;
-      }
+      .form-row { grid-template-columns: 1fr; gap: 5px; }
+      .form-row.split-2 { grid-template-columns: 1fr 1fr; }
+      .actions { grid-template-columns: repeat(2, 1fr); }
+      .btn { font-size: 13px; }
+      .hint, .preview-line { grid-column: 1 / -1; }
     }
 
-    /* 삼성 폴드 펼침 / 태블릿 */
     @media (min-width: 700px) {
-      .phone {
-        width: min(760px, 100%);
-        min-height: auto;
-        border-radius: 34px;
-      }
-
-      .screen {
-        min-height: auto;
-        border-radius: 24px;
-      }
-
-      .container {
-        padding: 24px 28px 28px;
-      }
-
-      .page-title {
-        font-size: 34px;
-      }
-
-      .section {
-        padding: 18px 22px;
-      }
-
-      .form-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        column-gap: 28px;
-        row-gap: 12px;
-      }
-
-      .form-row.full {
-        grid-column: 1 / -1;
-      }
-
-      .actions {
-        max-width: 620px;
-        margin-left: auto;
-        margin-right: auto;
-      }
+      .phone { width: min(760px, 100%); min-height: auto; border-radius: 34px; }
+      .screen { min-height: auto; border-radius: 24px; }
+      .container { padding: 24px 28px 28px; }
+      .page-title { font-size: 34px; }
+      .section { padding: 18px 22px; }
+      .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; row-gap: 12px; }
+      .form-row.full { grid-column: 1 / -1; }
+      .actions { max-width: 620px; margin-left: auto; margin-right: auto; }
     }
 
-    /* PC */
     @media (min-width: 1100px) {
-      .page {
-        padding: 36px;
-      }
-
-      .phone {
-        width: min(980px, 100%);
-        padding: 0;
-        background: transparent;
-        box-shadow: none;
-      }
-
-      .screen {
-        border-radius: 22px;
-        box-shadow: var(--shadow);
-      }
-
-      .status {
-        display: none;
-      }
-
-      .container {
-        padding: 34px 42px 36px;
-      }
-
-      .section {
-        padding: 20px 26px;
-      }
-
-      .form-row {
-        grid-template-columns: var(--label-width) 1fr;
-      }
+      .page { padding: 36px; }
+      .phone { width: min(980px, 100%); padding: 0; background: transparent; box-shadow: none; }
+      .screen { border-radius: 22px; box-shadow: var(--shadow); }
+      .status { display: none; }
+      .container { padding: 34px 42px 36px; }
+      .section { padding: 20px 26px; }
+      .form-row { grid-template-columns: var(--label-width) 1fr; }
+      .form-row.split-2 { grid-template-columns: var(--label-width) 1fr 1fr; }
     }
   </style>
 </head>
@@ -439,6 +337,8 @@
         <div class="container">
           <h1 class="page-title">접수 상담 등록</h1>
 
+          <div class="statusMsg" id="statusMsg"></div>
+
           <form id="consultForm">
             <section class="section">
               <h2 class="section-title">1. 접수 정보</h2>
@@ -446,33 +346,31 @@
               <div class="form-grid">
                 <div class="form-row">
                   <label for="receivedAt">접수일시</label>
-                  <div class="field-wrap">
-                    <input id="receivedAt" name="received_at" class="field" type="text" value="2025-05-26 10:30" />
-                    <span class="icon">▣</span>
-                  </div>
+                  <input id="receivedAt" class="field" type="text" readonly />
                 </div>
 
-                <div class="form-row">
+                <div class="form-row split-2">
                   <label for="reservationDate">예약일</label>
-                  <div class="field-wrap">
-                    <input id="reservationDate" name="reservation_date" class="field" type="text" value="2025-05-30" />
-                    <span class="icon">▣</span>
-                  </div>
+                  <input id="reservationDate" class="field" type="date" />
+                  <select id="reservationTime">
+                    <option value="" selected disabled>시간 선택</option>
+                  </select>
                 </div>
+                <div class="preview-line" id="reservationPreview">예약일과 시간을 선택하면 여기에 표시됩니다.</div>
 
                 <div class="form-row">
                   <label for="receptionistName">접수자명</label>
-                  <input id="receptionistName" name="receptionist_name" class="field" type="text" value="홍길동" />
+                  <input id="receptionistName" class="field" type="text" placeholder="접수자명을 입력하세요" />
                 </div>
 
                 <div class="form-row">
                   <label for="receptionistPhone">접수자 연락처</label>
-                  <input id="receptionistPhone" name="receptionist_phone" class="field" type="tel" value="010-1234-5678" />
+                  <input id="receptionistPhone" class="field" type="tel" placeholder="010-0000-0000" maxlength="13" inputmode="numeric" />
                 </div>
 
                 <div class="form-row full">
                   <label for="relationship">내담자와의 관계</label>
-                  <select id="relationship" name="relationship">
+                  <select id="relationship">
                     <option selected>본인</option>
                     <option>부모</option>
                     <option>배우자</option>
@@ -489,13 +387,13 @@
               <div class="form-grid">
                 <div class="form-row">
                   <label for="clientName">내담자명</label>
-                  <input id="clientName" name="client_name" class="field" type="text" placeholder="내담자명을 입력하세요" />
+                  <input id="clientName" class="field" type="text" placeholder="내담자명을 입력하세요" />
                 </div>
 
                 <div class="form-row">
                   <label for="gender">성별</label>
-                  <select id="gender" name="gender">
-                    <option selected disabled>선택하세요</option>
+                  <select id="gender">
+                    <option selected disabled value="">선택하세요</option>
                     <option>남성</option>
                     <option>여성</option>
                     <option>기타</option>
@@ -504,20 +402,17 @@
 
                 <div class="form-row">
                   <label for="clientPhone">연락처</label>
-                  <input id="clientPhone" name="client_phone" class="field" type="tel" placeholder="010-0000-0000" />
+                  <input id="clientPhone" class="field" type="tel" placeholder="010-0000-0000" maxlength="13" inputmode="numeric" />
                 </div>
 
                 <div class="form-row">
                   <label for="birthDate">생년월일</label>
-                  <div class="field-wrap">
-                    <input id="birthDate" name="birth_date" class="field" type="text" placeholder="생년월일을 입력하세요" />
-                    <span class="icon">▣</span>
-                  </div>
+                  <input id="birthDate" class="field" type="text" placeholder="0000.00.00" maxlength="10" inputmode="numeric" />
                 </div>
 
                 <div class="form-row">
                   <label for="job">직업</label>
-                  <input id="job" name="job" class="field" type="text" placeholder="직업을 입력하세요" />
+                  <input id="job" class="field" type="text" placeholder="직업을 입력하세요" />
                 </div>
               </div>
             </section>
@@ -528,8 +423,8 @@
               <div class="form-grid">
                 <div class="form-row">
                   <label for="consultationTarget">상담대상</label>
-                  <select id="consultationTarget" name="consultation_target">
-                    <option selected disabled>선택하세요</option>
+                  <select id="consultationTarget">
+                    <option selected disabled value="">선택하세요</option>
                     <option>개인상담</option>
                     <option>집단상담</option>
                     <option>가족상담</option>
@@ -540,8 +435,8 @@
 
                 <div class="form-row">
                   <label for="consultationTopic">상담주제</label>
-                  <select id="consultationTopic" name="consultation_topic">
-                    <option selected disabled>선택하세요</option>
+                  <select id="consultationTopic">
+                    <option selected disabled value="">선택하세요</option>
                     <option>심리/정서상담</option>
                     <option>진로/직업상담</option>
                     <option>가족상담</option>
@@ -554,9 +449,9 @@
                 </div>
 
                 <div class="form-row full">
-                  <label for="details">상세 상담내용</label>
+                  <label for="details">접수상담내용</label>
                   <div class="textarea-wrap">
-                    <textarea id="details" name="details_of_consultation" maxlength="1000" placeholder="상담에 대해 자세히 작성해주세요."></textarea>
+                    <textarea id="details" maxlength="1000" placeholder="상담에 대해 자세히 작성해주세요."></textarea>
                     <span class="counter" id="detailsCounter">0 / 1000</span>
                   </div>
                 </div>
@@ -564,8 +459,8 @@
             </section>
 
             <div class="actions">
-              <button type="button" class="btn primary">▣ 등록</button>
-              <button type="reset" class="btn">↻ 초기화</button>
+              <button type="submit" class="btn primary" id="submitBtn">▣ 등록</button>
+              <button type="reset" class="btn" id="resetBtn">↻ 초기화</button>
               <a href="index.html" class="btn">⌂ 메인화면</a>
             </div>
           </form>
@@ -574,12 +469,242 @@
     </main>
   </div>
 
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // ===== Supabase 연결 설정 =====
+    const SUPABASE_URL = "https://fafdxaifluftnertbpvr.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_RNEAVQD2wZRtZojxVU11aA_Dacmf7db";
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const TABLE_NAME = "db_sina_counsel";
+
+    // ===== 1) 접수일시: 현재 시각 자동 표시 (KST) =====
+    const receivedAtField = document.getElementById("receivedAt");
+    const nowDate = new Date();
+    receivedAtField.value = nowDate.toLocaleString("ko-KR", {
+      timeZone: "Asia/Seoul",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hour12: false
+    });
+
+    // ===== 2) 연락처 자동 하이픈 포맷 (000-0000-0000) =====
+    function attachPhoneFormatter(inputEl) {
+      inputEl.addEventListener("input", () => {
+        let digits = inputEl.value.replace(/\D/g, "").slice(0, 11);
+        let formatted = digits;
+        if (digits.length > 3 && digits.length <= 7) {
+          formatted = digits.slice(0, 3) + "-" + digits.slice(3);
+        } else if (digits.length > 7) {
+          formatted = digits.slice(0, 3) + "-" + digits.slice(3, 7) + "-" + digits.slice(7);
+        }
+        inputEl.value = formatted;
+      });
+    }
+    const receptionistPhoneEl = document.getElementById("receptionistPhone");
+    const clientPhoneEl = document.getElementById("clientPhone");
+    attachPhoneFormatter(receptionistPhoneEl);
+    attachPhoneFormatter(clientPhoneEl);
+
+    function isValidPhone(value) {
+      return /^\d{3}-\d{3,4}-\d{4}$/.test(value);
+    }
+
+    // ===== 3) 생년월일 자동 마침표 포맷 (0000.00.00) =====
+    const birthDateEl = document.getElementById("birthDate");
+    birthDateEl.addEventListener("input", () => {
+      let digits = birthDateEl.value.replace(/\D/g, "").slice(0, 8);
+      let formatted = digits;
+      if (digits.length > 4 && digits.length <= 6) {
+        formatted = digits.slice(0, 4) + "." + digits.slice(4);
+      } else if (digits.length > 6) {
+        formatted = digits.slice(0, 4) + "." + digits.slice(4, 6) + "." + digits.slice(6);
+      }
+      birthDateEl.value = formatted;
+    });
+
+    function isValidBirthDate(value) {
+      const m = value.match(/^(\d{4})\.(\d{2})\.(\d{2})$/);
+      if (!m) return false;
+      const year = parseInt(m[1], 10);
+      const month = parseInt(m[2], 10);
+      const day = parseInt(m[3], 10);
+      if (month < 1 || month > 12) return false;
+      const daysInMonth = new Date(year, month, 0).getDate();
+      if (day < 1 || day > daysInMonth) return false;
+      return true;
+    }
+
+    function birthDateToISO(value) {
+      // 0000.00.00 -> 0000-00-00
+      return value.replaceAll(".", "-");
+    }
+
+    // ===== 4) 예약일: 날짜 + 시간 선택 → 자동 표시 + ISO 변환 =====
+    const reservationDateEl = document.getElementById("reservationDate");
+    const reservationTimeEl = document.getElementById("reservationTime");
+    const reservationPreviewEl = document.getElementById("reservationPreview");
+
+    // 시간 옵션 생성: 09:00 ~ 20:00, 30분 단위
+    (function buildTimeOptions() {
+      for (let h = 9; h <= 20; h++) {
+        for (let m of [0, 30]) {
+          if (h === 20 && m === 30) continue;
+          const hh = String(h).padStart(2, "0");
+          const mm = String(m).padStart(2, "0");
+          const ampm = h < 12 ? "오전" : "오후";
+          const opt = document.createElement("option");
+          opt.value = `${hh}:${mm}`;
+          opt.textContent = `${hh}:${mm} (${ampm})`;
+          reservationTimeEl.appendChild(opt);
+        }
+      }
+    })();
+
+    const DAY_KR = ["일", "월", "화", "수", "목", "금", "토"];
+
+    function updateReservationPreview() {
+      const dateVal = reservationDateEl.value;
+      const timeVal = reservationTimeEl.value;
+      if (!dateVal || !timeVal) {
+        reservationPreviewEl.textContent = "예약일과 시간을 선택하면 여기에 표시됩니다.";
+        return;
+      }
+      const d = new Date(dateVal + "T00:00:00");
+      const dayLabel = DAY_KR[d.getDay()];
+      const ampm = parseInt(timeVal.split(":")[0], 10) < 12 ? "오전" : "오후";
+      reservationPreviewEl.textContent = `${dateVal}(${dayLabel}),${timeVal}(${ampm})`;
+    }
+    reservationDateEl.addEventListener("change", updateReservationPreview);
+    reservationTimeEl.addEventListener("change", updateReservationPreview);
+
+    function getAppointmentISO() {
+      const dateVal = reservationDateEl.value;
+      const timeVal = reservationTimeEl.value;
+      if (!dateVal || !timeVal) return null;
+      // KST(+09:00) 고정 오프셋으로 명시하여 UTC 변환 오류 방지
+      return new Date(`${dateVal}T${timeVal}:00+09:00`).toISOString();
+    }
+
+    // ===== 5) 상세 상담내용 글자수 카운터 =====
     const details = document.getElementById("details");
     const detailsCounter = document.getElementById("detailsCounter");
-
     details.addEventListener("input", () => {
       detailsCounter.textContent = `${details.value.length} / 1000`;
+    });
+
+    // ===== 6) 상태 메시지 표시 =====
+    const statusMsgEl = document.getElementById("statusMsg");
+    function showStatus(type, message) {
+      statusMsgEl.className = "statusMsg show " + type;
+      statusMsgEl.textContent = message;
+      statusMsgEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    function hideStatus() {
+      statusMsgEl.className = "statusMsg";
+      statusMsgEl.textContent = "";
+    }
+
+    function markInvalid(el, invalid) {
+      if (invalid) el.classList.add("invalid");
+      else el.classList.remove("invalid");
+    }
+
+    // ===== 7) 등록(제출) 처리 =====
+    const form = document.getElementById("consultForm");
+    const submitBtn = document.getElementById("submitBtn");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hideStatus();
+
+      const receptionistName = document.getElementById("receptionistName").value.trim();
+      const receptionistPhone = receptionistPhoneEl.value.trim();
+      const relationship = document.getElementById("relationship").value;
+      const clientName = document.getElementById("clientName").value.trim();
+      const gender = document.getElementById("gender").value;
+      const clientPhone = clientPhoneEl.value.trim();
+      const birthDateRaw = birthDateEl.value.trim();
+      const job = document.getElementById("job").value.trim();
+      const consultationTarget = document.getElementById("consultationTarget").value;
+      const consultationTopic = document.getElementById("consultationTopic").value;
+      const detailsVal = details.value.trim();
+
+      // ---- 필수값 + 형식 검증 ----
+      let hasError = false;
+
+      markInvalid(document.getElementById("clientName"), !clientName);
+      if (!clientName) hasError = true;
+
+      markInvalid(document.getElementById("gender"), !gender);
+      if (!gender) hasError = true;
+
+      const phoneValid = isValidPhone(clientPhone);
+      markInvalid(clientPhoneEl, !phoneValid);
+      if (!phoneValid) hasError = true;
+
+      const receptionistPhoneValid = receptionistPhone === "" || isValidPhone(receptionistPhone);
+      markInvalid(receptionistPhoneEl, !receptionistPhoneValid);
+      if (!receptionistPhoneValid) hasError = true;
+
+      const birthValid = isValidBirthDate(birthDateRaw);
+      markInvalid(birthDateEl, !birthValid);
+      if (!birthValid) hasError = true;
+
+      markInvalid(document.getElementById("consultationTarget"), !consultationTarget);
+      if (!consultationTarget) hasError = true;
+
+      markInvalid(document.getElementById("consultationTopic"), !consultationTopic);
+      if (!consultationTopic) hasError = true;
+
+      const appointmentISO = getAppointmentISO();
+      markInvalid(reservationDateEl, !appointmentISO);
+      markInvalid(reservationTimeEl, !appointmentISO);
+      if (!appointmentISO) hasError = true;
+
+      if (hasError) {
+        showStatus("error", "입력값을 다시 확인해주세요. 빨간색으로 표시된 항목을 채워주세요.");
+        return;
+      }
+
+      const payload = {
+        received_at: new Date().toISOString(),
+        appointment_at: appointmentISO,
+        receptionist_name: receptionistName || null,
+        receptionist_phone: receptionistPhone || null,
+        relationship: relationship,
+        receptionist_content: detailsVal || null,
+        client_name: clientName,
+        client_phone: clientPhone,
+        Birth_date: birthDateToISO(birthDateRaw),
+        sex_code: gender,
+        client_job: job || null,
+        counsel_client_type: consultationTarget,
+        counsel_topic: consultationTopic
+      };
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "등록 중...";
+
+      const { error } = await sb.from(TABLE_NAME).insert([payload]);
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = "▣ 등록";
+
+      if (error) {
+        console.error(error);
+        showStatus("error", "저장 중 오류가 발생했습니다: " + error.message);
+        return;
+      }
+
+      showStatus("success", "접수 상담이 정상적으로 등록되었습니다.");
+      form.reset();
+      detailsCounter.textContent = "0 / 1000";
+      reservationPreviewEl.textContent = "예약일과 시간을 선택하면 여기에 표시됩니다.";
+      receivedAtField.value = new Date().toLocaleString("ko-KR", {
+        timeZone: "Asia/Seoul",
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hour12: false
+      });
     });
   </script>
 </body>
