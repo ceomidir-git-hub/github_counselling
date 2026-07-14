@@ -76,6 +76,9 @@
   }
   .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
   .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid.session-row {
+    grid-template-columns: 0.7fr 1.3fr 1.3fr 1.3fr 0.7fr;
+  }
   .field { display: flex; flex-direction: column; }
   .field.full { grid-column: 1 / -1; }
   label {
@@ -85,6 +88,7 @@
     margin-bottom: 6px;
   }
   input[type="text"],
+  input[type="date"],
   select,
   textarea {
     width: 100%;
@@ -130,6 +134,22 @@
     gap: 10px;
   }
   .test-tools-row select { font-size: 14px; }
+  .dtRow{
+    display:flex;
+    gap:6px;
+  }
+  .dtRow input[type="date"]{ flex:1.2; font-size:14px; }
+  .dtRow select{ flex:1; font-size:14px; padding:0 6px; }
+  .dtPreview{
+    font-size:13px;
+    font-weight:700;
+    color:#1a56db;
+    background:#eef4ff;
+    border:1px solid #d7e6ff;
+    border-radius:6px;
+    padding:5px 8px;
+    margin-top:5px;
+  }
   .field.invalid input, .field.invalid select{
     border-color:#dc2626 !important;
     box-shadow:0 0 0 3px rgba(220,38,38,.10);
@@ -216,6 +236,7 @@
     .grid,
     .grid.cols-3,
     .grid.cols-4,
+    .grid.session-row,
     .test-tools-row {
       grid-template-columns: 1fr;
     }
@@ -242,27 +263,27 @@
       <div class="grid">
         <div class="field">
           <label for="clientName">내담자명</label>
-          <input type="text" id="clientName" placeholder="내담자명을 입력하세요">
+          <input type="text" id="clientName" placeholder="내담자명을 입력하세요" readonly>
         </div>
         <div class="field">
           <label for="clientPhone">연락처</label>
-          <input type="text" id="clientPhone" placeholder="010-0000-0000" maxlength="13" inputmode="numeric">
+          <input type="text" id="clientPhone" placeholder="010-0000-0000" maxlength="13" inputmode="numeric" readonly>
         </div>
         <div class="field">
           <label for="job">직업</label>
-          <select id="job" disabled>
+          <select id="job">
             <option selected disabled value="">불러오는 중...</option>
           </select>
         </div>
         <div class="field">
           <label for="gender">성별</label>
-          <select id="gender" disabled>
+          <select id="gender">
             <option selected disabled value="">불러오는 중...</option>
           </select>
         </div>
         <div class="field">
           <label for="birthDate">생년월일</label>
-          <input type="text" id="birthDate" placeholder="YYYY-MM-DD" readonly>
+          <input type="text" id="birthDate" placeholder="YYYY-MM-DD" maxlength="10" inputmode="numeric">
         </div>
         <div class="field">
           <label for="age">나이</label>
@@ -270,7 +291,7 @@
         </div>
         <div class="field full">
           <label for="address">주소</label>
-          <input type="text" id="address" placeholder="주소를 입력하세요" readonly>
+          <input type="text" id="address" placeholder="주소를 입력하세요">
         </div>
       </div>
     </div>
@@ -278,11 +299,11 @@
     <!-- 2. 예약 및 진행 정보 -->
     <div class="section">
       <h2><i class="ti ti-calendar-time" aria-hidden="true"></i>2. 예약 및 진행 정보</h2>
-      <div class="grid cols-3">
+      <div class="grid session-row">
         <div class="field">
           <label for="sessionNo">금회 회기</label>
-          <select id="sessionNo" disabled>
-            <option value="">선택하세요</option>
+          <select id="sessionNo">
+            <option value="">선택</option>
             <option value="1">1회기</option>
             <option value="2">2회기</option>
             <option value="3">3회기</option>
@@ -295,38 +316,49 @@
             <option value="10">10회기</option>
           </select>
         </div>
-        <div class="field">
-          <label for="expectedDate">예상일시</label>
-          <input type="text" id="expectedDate" placeholder="YYYY-MM-DD HH:MM" readonly>
+        <div class="field" id="reservationField">
+          <label>예상일시</label>
+          <div class="dtRow">
+            <input type="date" id="reservationDate">
+            <select id="reservationTime"><option value="" selected disabled>시간</option></select>
+          </div>
+          <div class="dtPreview" id="reservationPreview">-</div>
         </div>
-        <div></div>
-        <div class="field">
-          <label for="startDate">실시일 시작</label>
-          <input type="text" id="startDate" placeholder="YYYY-MM-DD HH:MM" readonly>
+        <div class="field" id="startField">
+          <label>실시일 시작</label>
+          <div class="dtRow">
+            <input type="date" id="startDate">
+            <select id="startTime"><option value="" selected disabled>시간</option></select>
+          </div>
+          <div class="dtPreview" id="startPreview">-</div>
         </div>
-        <div class="field">
-          <label for="endDate">실시일 종료</label>
-          <input type="text" id="endDate" placeholder="YYYY-MM-DD HH:MM" readonly>
+        <div class="field" id="endField">
+          <label>실시일 종료</label>
+          <div class="dtRow">
+            <input type="date" id="endDate">
+            <select id="endTime"><option value="" selected disabled>시간</option></select>
+          </div>
+          <div class="dtPreview" id="endPreview">-</div>
         </div>
         <div class="field">
           <label for="duration">상담시간</label>
-          <input type="text" id="duration" placeholder="자동 계산" readonly>
+          <input type="text" id="duration" placeholder="자동" readonly>
         </div>
       </div>
 
       <div class="field full" style="margin-top:16px;">
         <label>검사도구</label>
         <div class="test-tools-row">
-          <select id="testTool1" disabled>
+          <select id="testTool1">
             <option selected disabled value="">불러오는 중...</option>
           </select>
-          <select id="testTool2" disabled>
+          <select id="testTool2">
             <option selected disabled value="">불러오는 중...</option>
           </select>
-          <select id="testTool3" disabled>
+          <select id="testTool3">
             <option selected disabled value="">불러오는 중...</option>
           </select>
-          <select id="testTool4" disabled>
+          <select id="testTool4">
             <option selected disabled value="">불러오는 중...</option>
           </select>
         </div>
@@ -339,19 +371,19 @@
       <div class="grid">
         <div class="field">
           <label for="consultationTarget">상담대상</label>
-          <select id="consultationTarget" disabled>
+          <select id="consultationTarget">
             <option selected disabled value="">불러오는 중...</option>
           </select>
         </div>
         <div class="field">
           <label for="consultationTopic">상담주제</label>
-          <select id="consultationTopic" disabled>
+          <select id="consultationTopic">
             <option selected disabled value="">불러오는 중...</option>
           </select>
         </div>
         <div class="field full">
           <label for="counselDetail">상세 상담내용</label>
-          <textarea id="counselDetail" maxlength="1000" placeholder="상담에 대해 자세히 작성해주세요." readonly></textarea>
+          <textarea id="counselDetail" maxlength="1000" placeholder="상담에 대해 자세히 작성해주세요."></textarea>
           <div class="char-count"><span id="charCount">0</span> / 1000</div>
         </div>
       </div>
@@ -420,9 +452,20 @@
   });
   function isValidPhone(value){ return /^\d{3}-\d{3,4}-\d{4}$/.test(value); }
 
-  // ===== 2) 나이 자동 계산 =====
+  // ===== 2) 생년월일 자동 하이픈 포맷 + 나이 자동 계산 =====
   const birthDateInput = document.getElementById('birthDate');
   const ageInput = document.getElementById('age');
+  birthDateInput.addEventListener('input', () => {
+    let digits = birthDateInput.value.replace(/\D/g, "").slice(0, 8);
+    let formatted = digits;
+    if (digits.length > 4 && digits.length <= 6) {
+      formatted = digits.slice(0, 4) + "-" + digits.slice(4);
+    } else if (digits.length > 6) {
+      formatted = digits.slice(0, 4) + "-" + digits.slice(4, 6) + "-" + digits.slice(6);
+    }
+    birthDateInput.value = formatted;
+    ageInput.value = calcAge(birthDateInput.value.trim());
+  });
   function isValidBirthDate(value){
     const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (!m) return false;
@@ -443,7 +486,7 @@
     return age >= 0 ? age + '세' : '';
   }
 
-  // ===== 3) KST 날짜/시간 표시 포맷 (YYYY-MM-DD HH:MM) =====
+  // ===== 3) KST 날짜/시간 표시 포맷 (조회 팝업의 회기 목록 등에 사용) =====
   function formatKST(iso){
     if (!iso) return '';
     const parts = new Intl.DateTimeFormat("en-CA", {
@@ -456,19 +499,98 @@
     return `${map.year}-${map.month}-${map.day} ${map.hour}:${map.minute}`;
   }
 
-  // ===== 4) 상담시간(분) 계산 =====
-  const durationInput = document.getElementById('duration');
-  function calcDurationFromISO(startISO, endISO){
-    if (!startISO || !endISO) return '';
-    const diffMin = Math.round((new Date(endISO) - new Date(startISO)) / 60000);
-    return diffMin > 0 ? diffMin + '분' : '';
+  // ISO(UTC) -> KST 기준 {date:'YYYY-MM-DD', time:'HH:MM'} 로 분리 (드롭다운 값 세팅용)
+  function isoToKSTParts(iso){
+    if (!iso) return { date: '', time: '' };
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Seoul",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hour12: false
+    }).formatToParts(new Date(iso));
+    const map = {};
+    parts.forEach(p => map[p.type] = p.value);
+    return { date: `${map.year}-${map.month}-${map.day}`, time: `${map.hour}:${map.minute}` };
   }
 
-  // ===== 5) 상세 상담내용 글자수 카운트 =====
+  // ===== 4) 날짜+시간 드롭다운 공통 유틸 (등록 화면과 동일) =====
+  const DAY_KR = ["일", "월", "화", "수", "목", "금", "토"];
+
+  function buildTimeOptions(selectEl, startHour, endHour, stepMin){
+    for (let h = startHour; h <= endHour; h++) {
+      for (let m = 0; m < 60; m += stepMin) {
+        if (h === endHour && m > 0) continue;
+        const hh = String(h).padStart(2, "0");
+        const mm = String(m).padStart(2, "0");
+        const ampm = h < 12 ? "오전" : "오후";
+        const opt = document.createElement("option");
+        opt.value = `${hh}:${mm}`;
+        opt.textContent = `${hh}:${mm} (${ampm})`;
+        selectEl.appendChild(opt);
+      }
+    }
+  }
+
+  function setupDateTimePair(dateId, timeId, previewId){
+    const dateEl = document.getElementById(dateId);
+    const timeEl = document.getElementById(timeId);
+    const previewEl = document.getElementById(previewId);
+
+    function updatePreview(){
+      const d = dateEl.value, t = timeEl.value;
+      if (!d || !t) { previewEl.textContent = "-"; return; }
+      const dObj = new Date(d + "T00:00:00");
+      const dayLabel = DAY_KR[dObj.getDay()];
+      const ampm = parseInt(t.split(":")[0], 10) < 12 ? "오전" : "오후";
+      previewEl.textContent = `${d}(${dayLabel}),${t}(${ampm})`;
+    }
+    dateEl.addEventListener("change", updatePreview);
+    timeEl.addEventListener("change", updatePreview);
+
+    function getISO(){
+      const d = dateEl.value, t = timeEl.value;
+      if (!d || !t) return null;
+      return new Date(`${d}T${t}:00+09:00`).toISOString();
+    }
+
+    function setFromISO(iso){
+      const parts = isoToKSTParts(iso);
+      dateEl.value = parts.date;
+      timeEl.value = parts.time;
+      updatePreview();
+    }
+
+    return { dateEl, timeEl, previewEl, getISO, updatePreview, setFromISO };
+  }
+
+  buildTimeOptions(document.getElementById("reservationTime"), 0, 23, 10);
+  buildTimeOptions(document.getElementById("startTime"), 0, 23, 10);
+  buildTimeOptions(document.getElementById("endTime"), 0, 23, 10);
+
+  const reservationPair = setupDateTimePair("reservationDate", "reservationTime", "reservationPreview");
+  const startPair = setupDateTimePair("startDate", "startTime", "startPreview");
+  const endPair = setupDateTimePair("endDate", "endTime", "endPreview");
+
+  // ===== 5) 실시일 시작/종료 -> 상담시간 자동 계산 (분 단위) =====
+  const durationInput = document.getElementById('duration');
+  function calcDuration(){
+    const startISO = startPair.getISO();
+    const endISO = endPair.getISO();
+    if (!startISO || !endISO) { durationInput.value = ""; return; }
+    const start = new Date(startISO);
+    const end = new Date(endISO);
+    if (end <= start) { durationInput.value = ""; return; }
+    const diffMin = Math.round((end - start) / 60000);
+    durationInput.value = diffMin + "분";
+  }
+  ["startDate","startTime","endDate","endTime"].forEach(id => {
+    document.getElementById(id).addEventListener("change", calcDuration);
+  });
+
+  // ===== 6) 상세 상담내용 글자수 카운트 =====
   const counselDetail = document.getElementById('counselDetail');
   const charCount = document.getElementById('charCount');
 
-  // ===== 6) lookup 테이블에서 옵션 동적 로딩 (상담등록 화면과 동일) =====
+  // ===== 7) lookup 테이블에서 옵션 동적 로딩 (상담등록 화면과 동일) =====
   async function loadLookupOptions(tableName, selectEl){
     if (!sb) { selectEl.innerHTML = `<option selected disabled value="">목록을 불러올 수 없습니다</option>`; return; }
     const { data, error } = await sb.from(tableName).select("code, name, sort_order").eq("active", true).order("sort_order", { ascending: true });
@@ -482,7 +604,7 @@
     selectEl.innerHTML = html;
   }
 
-  // ===== 7) 상태 메시지 =====
+  // ===== 8) 상태 메시지 =====
   const statusMsgEl = document.getElementById("statusMsg");
   function showStatus(type, msg){
     statusMsgEl.className = "statusMsg show " + type;
@@ -494,7 +616,7 @@
     if (invalid) fieldEl.classList.add("invalid"); else fieldEl.classList.remove("invalid");
   }
 
-  // ===== 8) 조회 팝업: 1단계(전화번호 선택) -> 2단계(회기 선택) =====
+  // ===== 9) 조회 팝업: 1단계(전화번호 선택) -> 2단계(회기 선택) =====
   const lookupOverlay = document.getElementById("lookupOverlay");
   const lookupResultBox = document.getElementById("lookupResultBox");
   const lookupTitleEl = document.getElementById("lookupTitle");
@@ -589,10 +711,10 @@
     document.getElementById("address").value = record.client_address || '';
 
     document.getElementById("sessionNo").value = record.Counseling_session ? String(record.Counseling_session) : '';
-    document.getElementById("expectedDate").value = formatKST(record.appointment_at);
-    document.getElementById("startDate").value = formatKST(record.Consultation_start_time);
-    document.getElementById("endDate").value = formatKST(record.Consultation_end_time);
-    durationInput.value = calcDurationFromISO(record.Consultation_start_time, record.Consultation_end_time);
+    reservationPair.setFromISO(record.appointment_at);
+    startPair.setFromISO(record.Consultation_start_time);
+    endPair.setFromISO(record.Consultation_end_time);
+    calcDuration();
 
     document.getElementById("testTool1").value = record.Inspection_tool1 || '';
     document.getElementById("testTool2").value = record.Inspection_tool2 || '';
@@ -604,10 +726,11 @@
     counselDetail.value = record.Details_of_consultation || '';
     charCount.textContent = counselDetail.value.length;
 
-    ["clientName","clientPhone"].forEach(id => markInvalid(document.getElementById(id).parentElement, false));
+    ["job","gender","consultationTarget","consultationTopic"].forEach(id => markInvalid(document.getElementById(id).parentElement, false));
+    markInvalid(document.getElementById("birthDate").parentElement, false);
   }
 
-  // ===== 9) 저장(수정) - client_name / client_phone 만 UPDATE =====
+  // ===== 10) 저장(수정) - client_name / client_phone 제외 전 항목 UPDATE =====
   const saveBtn = document.getElementById("saveBtn");
   saveBtn.addEventListener("click", async () => {
     hideStatus();
@@ -618,28 +741,85 @@
     const loggedIn = await guardLoginOrRedirect();
     if (!loggedIn) return;
 
-    const clientName = document.getElementById("clientName").value.trim();
-    const clientPhone = clientPhoneEl.value.trim();
+    const job = document.getElementById("job").value;
+    const gender = document.getElementById("gender").value;
+    const birthDateRaw = birthDateInput.value.trim();
+    const address = document.getElementById("address").value.trim();
+
+    const sessionNo = document.getElementById("sessionNo").value;
+    const testTool1 = document.getElementById("testTool1").value;
+    const testTool2 = document.getElementById("testTool2").value;
+    const testTool3 = document.getElementById("testTool3").value;
+    const testTool4 = document.getElementById("testTool4").value;
+
+    const consultationTarget = document.getElementById("consultationTarget").value;
+    const consultationTopic = document.getElementById("consultationTopic").value;
+    const counselDetailVal = counselDetail.value.trim();
 
     let hasError = false;
-    markInvalid(document.getElementById("clientName").parentElement, !clientName);
-    if (!clientName) hasError = true;
 
-    const phoneValid = isValidPhone(clientPhone);
-    markInvalid(clientPhoneEl.parentElement, !phoneValid);
-    if (!phoneValid) hasError = true;
+    markInvalid(document.getElementById("gender").parentElement, !gender);
+    if (!gender) hasError = true;
+
+    const birthValid = birthDateRaw === "" || isValidBirthDate(birthDateRaw);
+    markInvalid(birthDateInput.parentElement, !birthValid);
+    if (!birthValid) hasError = true;
+
+    markInvalid(document.getElementById("consultationTarget").parentElement, !consultationTarget);
+    if (!consultationTarget) hasError = true;
+
+    markInvalid(document.getElementById("consultationTopic").parentElement, !consultationTopic);
+    if (!consultationTopic) hasError = true;
+
+    const appointmentISO = reservationPair.getISO();
+    markInvalid(document.getElementById("reservationField"), !appointmentISO);
+    if (!appointmentISO) hasError = true;
+
+    const startISO = startPair.getISO();
+    const endISO = endPair.getISO();
+    if (startISO && endISO && new Date(endISO) <= new Date(startISO)) {
+      markInvalid(document.getElementById("endField"), true);
+      showStatus("error", "실시일 종료는 시작보다 늦어야 합니다.");
+      hasError = true;
+    } else {
+      markInvalid(document.getElementById("endField"), false);
+    }
 
     if (hasError) {
-      showStatus("error", "내담자명과 연락처를 올바르게 입력해주세요.");
+      if (statusMsgEl.textContent === "") showStatus("error", "입력값을 다시 확인해주세요. 빨간색으로 표시된 항목을 채워주세요.");
       return;
     }
+
+    // ---- 저장 전 재확인 (되돌릴 수 없음 안내) ----
+    const confirmed = window.confirm(
+      "수정한 내용을 저장하시겠습니까?\n\n⚠ 저장하면 되돌릴 수 없습니다.\n(이전 내용으로 복구할 수 없으니, 저장 전 다시 한번 확인해주세요.)"
+    );
+    if (!confirmed) return;
+
+    const payload = {
+      client_job: job || null,
+      sex_code: gender,
+      Birth_date: birthValid && birthDateRaw ? birthDateRaw : null,
+      client_address: address || null,
+      Counseling_session: sessionNo ? parseInt(sessionNo, 10) : null,
+      appointment_at: appointmentISO,
+      Consultation_start_time: startISO,
+      Consultation_end_time: endISO,
+      Inspection_tool1: testTool1 || null,
+      Inspection_tool2: testTool2 || null,
+      Inspection_tool3: testTool3 || null,
+      Inspection_tool4: testTool4 || null,
+      counsel_client_type: consultationTarget,
+      counsel_topic: consultationTopic,
+      Details_of_consultation: counselDetailVal || null
+    };
 
     saveBtn.disabled = true;
     saveBtn.textContent = "저장 중...";
 
     const { error } = await sb
       .from(TABLE_NAME)
-      .update({ client_name: clientName, client_phone: clientPhone })
+      .update(payload)
       .eq("id", currentRecordId);
 
     saveBtn.disabled = false;
@@ -651,10 +831,10 @@
       return;
     }
 
-    showStatus("success", "내담자명/연락처가 정상적으로 저장되었습니다.");
+    showStatus("success", "내용이 정상적으로 저장되었습니다. (내담자명/연락처는 변경되지 않았습니다)");
   });
 
-  // ===== 10) 초기화 =====
+  // ===== 11) 초기화 =====
   document.getElementById("resetBtn").addEventListener("click", () => {
     currentRecordId = null;
     hideStatus();
@@ -662,6 +842,11 @@
       charCount.textContent = "0";
       ageInput.value = "";
       durationInput.value = "";
+      [reservationPair, startPair, endPair].forEach(p => p.updatePreview());
+      ["job","gender","birthDate","address","sessionNo","testTool1","testTool2","testTool3","testTool4","consultationTarget","consultationTopic"]
+        .forEach(id => markInvalid(document.getElementById(id).parentElement, false));
+      ["reservationField","startField","endField"]
+        .forEach(id => markInvalid(document.getElementById(id), false));
     }, 0);
   });
 
@@ -669,7 +854,7 @@
     window.location.href = 'index.html';
   });
 
-  // ===== 11) 초기화(페이지 로드) =====
+  // ===== 12) 초기화(페이지 로드) =====
   (async function initPage(){
     await guardLoginOrRedirect();
     loadLookupOptions("sex_codes", document.getElementById("gender"));
