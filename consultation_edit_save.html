@@ -11,7 +11,7 @@
     margin: 0;
     padding: 40px 20px;
     background: #f4f5f7;
-    font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: #222;
   }
   .container {
@@ -23,7 +23,7 @@
     padding: 32px 40px 40px;
   }
   h1 {
-    font-size: 26px;
+    font-size: 30px;
     font-weight: 700;
     margin: 0 0 12px;
     color: #14171f;
@@ -31,10 +31,7 @@
     align-items: center;
     gap: 10px;
   }
-  h1 i {
-    font-size: 26px;
-    color: #1a56db;
-  }
+  h1 i { font-size: 30px; color: #1a56db; }
   .section {
     border: 1px solid #e0e2e7;
     border-radius: 8px;
@@ -42,7 +39,7 @@
     margin-bottom: 20px;
   }
   .section h2 {
-    font-size: 19px;
+    font-size: 17px;
     font-weight: 700;
     color: #1a56db;
     margin: 0 0 18px;
@@ -50,22 +47,39 @@
     align-items: center;
     gap: 8px;
   }
-  .section h2 i { font-size: 19px; }
+  .section h2 i { font-size: 17px; }
+  .sectionHeadRow{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .sectionHeadRow h2{ margin:0; }
+  .lookupBtn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:#eef2ff;
+    border:1px solid #c7d2fe;
+    color:#3730a3;
+    font-size:13px;
+    font-weight:800;
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .lookupBtn:hover{ background:#e0e7ff; }
   .grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 16px 24px;
   }
-  .grid.cols-3 {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .grid.cols-4 {
-    grid-template-columns: repeat(4, 1fr);
-  }
+  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
   .field { display: flex; flex-direction: column; }
   .field.full { grid-column: 1 / -1; }
   label {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: #374151;
     margin-bottom: 6px;
@@ -78,7 +92,7 @@
     padding: 0 12px;
     border: 1px solid #d1d5db;
     border-radius: 6px;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     color: #111827;
     background: #ffffff;
@@ -105,7 +119,7 @@
   }
   .char-count {
     text-align: right;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     color: #9ca3af;
     margin-top: 4px;
@@ -115,13 +129,11 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
   }
-  .test-tools-row select { font-size: 15px; }
-  .date-range {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .test-tools-row select { font-size: 14px; }
+  .field.invalid input, .field.invalid select{
+    border-color:#dc2626 !important;
+    box-shadow:0 0 0 3px rgba(220,38,38,.10);
   }
-  .date-range span { color: #9ca3af; font-size: 13px; flex-shrink: 0; }
   .actions {
     display: flex;
     gap: 10px;
@@ -134,7 +146,7 @@
     border: 1px solid #d1d5db;
     background: #ffffff;
     color: #374151;
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     display: flex;
@@ -144,14 +156,70 @@
     font-family: inherit;
   }
   .btn:hover { background: #f9fafb; }
+  .btn:disabled { opacity:.6; cursor:not-allowed; }
   .btn.primary {
     background: #1a56db;
     border-color: #1a56db;
     color: #ffffff;
   }
   .btn.primary:hover { background: #1747b8; }
-  @media (max-width: 640px) {
-    .grid, .grid.cols-3, .grid.cols-4, .test-tools-row { grid-template-columns: 1fr; }
+  .statusMsg{
+    display:none;
+    border-radius:8px;
+    padding:10px 14px;
+    font-size:13px;
+    font-weight:700;
+    margin-bottom:16px;
+  }
+  .statusMsg.show{ display:block; }
+  .statusMsg.success{ background:#ecfdf3; border:1px solid #bbf7d0; color:#16a34a; }
+  .statusMsg.error{ background:#fef2f2; border:1px solid #fecaca; color:#dc2626; }
+
+  /* 조회 팝업 (전화번호 선택 -> 회기 선택 2단계) */
+  .lookupOverlay{
+    position:fixed; inset:0;
+    background:rgba(15,23,42,.55);
+    display:none; align-items:center; justify-content:center;
+    z-index:999; padding:20px;
+  }
+  .lookupOverlay.open{ display:flex; }
+  .lookupModal{
+    width:100%; max-width:480px;
+    max-height:80vh;
+    overflow-y:auto;
+    background:#fff;
+    border-radius:14px;
+    padding:22px 22px 20px;
+    box-shadow:0 24px 60px rgba(15,23,42,.35);
+    position:relative;
+  }
+  .lookupModal h3{ margin:0 0 4px; font-size:17px; color:#1a56db; }
+  .lookupModal p.sub{ margin:0 0 16px; font-size:11px; color:#6b7280; }
+  .lookupClose{
+    position:absolute; right:14px; top:14px;
+    width:28px; height:28px; border:0;
+    background:#f1f5f9; border-radius:50%;
+    color:#475569; font-size:15px; cursor:pointer;
+  }
+  .lookupRow{
+    display:flex; justify-content:space-between;
+    font-size:14px; padding:10px 4px;
+    border-bottom:1px solid #f1f5f9;
+  }
+  .lookupRow b{ color:#374151; font-weight:800; }
+  .lookupRow span{ color:#111827; text-align:right; max-width:60%; }
+  .lookupRow.clickable{ cursor:pointer; border-radius:8px; }
+  .lookupRow.clickable:hover{ background:#f8fafc; }
+  .lookupEmpty{ font-size:14px; color:#6b7280; padding:14px 0; text-align:center; }
+
+  @media (max-width: 1024px) {
+    .grid,
+    .grid.cols-3,
+    .grid.cols-4,
+    .test-tools-row {
+      grid-template-columns: 1fr;
+    }
+    .container { padding: 22px 20px 28px; }
     .actions { flex-wrap: wrap; }
   }
 </style>
@@ -161,11 +229,16 @@
 <div class="container">
   <h1><i class="ti ti-clipboard-heart" aria-hidden="true"></i>조회/수정/저장</h1>
 
+  <div class="statusMsg" id="statusMsg"></div>
+
   <form id="intakeForm">
 
     <!-- 1. 내담자 정보 -->
     <div class="section">
-      <h2><i class="ti ti-user" aria-hidden="true"></i>1. 내담자 정보</h2>
+      <div class="sectionHeadRow">
+        <h2><i class="ti ti-user" aria-hidden="true"></i>1. 내담자 정보</h2>
+        <button type="button" class="lookupBtn" id="lookupBtn"><i class="ti ti-search" aria-hidden="true"></i>조회</button>
+      </div>
       <div class="grid">
         <div class="field">
           <label for="clientName">내담자명</label>
@@ -173,26 +246,18 @@
         </div>
         <div class="field">
           <label for="clientPhone">연락처</label>
-          <input type="text" id="clientPhone" placeholder="010-0000-0000">
+          <input type="text" id="clientPhone" placeholder="010-0000-0000" maxlength="13" inputmode="numeric">
         </div>
         <div class="field">
           <label for="job">직업</label>
           <select id="job" disabled>
-            <option value="">선택하세요</option>
-            <option value="학생">학생</option>
-            <option value="직장인">직장인</option>
-            <option value="자영업">자영업</option>
-            <option value="주부">주부</option>
-            <option value="무직">무직</option>
-            <option value="기타">기타</option>
+            <option selected disabled value="">불러오는 중...</option>
           </select>
         </div>
         <div class="field">
           <label for="gender">성별</label>
           <select id="gender" disabled>
-            <option value="">선택하세요</option>
-            <option value="남성">남성</option>
-            <option value="여성">여성</option>
+            <option selected disabled value="">불러오는 중...</option>
           </select>
         </div>
         <div class="field">
@@ -295,26 +360,13 @@
         <div class="field">
           <label for="consultationTarget">상담대상</label>
           <select id="consultationTarget" disabled>
-            <option value="">선택하세요</option>
-            <option value="개인상담">개인상담</option>
-            <option value="집단상담">집단상담</option>
-            <option value="가족상담">가족상담</option>
-            <option value="커플부부상담">커플부부상담</option>
-            <option value="기타">기타</option>
+            <option selected disabled value="">불러오는 중...</option>
           </select>
         </div>
         <div class="field">
           <label for="consultationTopic">상담주제</label>
           <select id="consultationTopic" disabled>
-            <option value="">선택하세요</option>
-            <option value="심리/정서상담">심리/정서상담</option>
-            <option value="진로/직업상담">진로/직업상담</option>
-            <option value="가족상담">가족상담</option>
-            <option value="비행/중독상담">비행/중독상담</option>
-            <option value="기업상담">기업상담</option>
-            <option value="대인관계">대인관계</option>
-            <option value="부부상담">부부상담</option>
-            <option value="기타">기타</option>
+            <option selected disabled value="">불러오는 중...</option>
           </select>
         </div>
         <div class="field full">
@@ -326,7 +378,6 @@
     </div>
 
     <div class="actions">
-      <button type="button" class="btn" id="searchBtn"><i class="ti ti-search" aria-hidden="true"></i>조회</button>
       <button type="button" class="btn primary" id="saveBtn"><i class="ti ti-device-floppy" aria-hidden="true"></i>수정/저장</button>
       <button type="reset" class="btn" id="resetBtn"><i class="ti ti-refresh" aria-hidden="true"></i>초기화</button>
       <button type="button" class="btn" id="homeBtn"><i class="ti ti-home" aria-hidden="true"></i>메인화면</button>
@@ -335,75 +386,317 @@
   </form>
 </div>
 
+<!-- 조회 팝업 -->
+<div class="lookupOverlay" id="lookupOverlay">
+  <div class="lookupModal">
+    <button class="lookupClose" type="button" onclick="closeLookupModal()">✕</button>
+    <h3 id="lookupTitle">전화번호 선택</h3>
+    <p class="sub" id="lookupSub">내담자명을 입력한 뒤 조회해주세요.</p>
+    <div id="lookupResultBox">
+      <div class="lookupEmpty">내담자명을 입력한 뒤 조회해주세요.</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // 생년월일 -> 나이 자동 계산
+  // ===== Supabase 연결 설정 (상담등록 화면과 동일) =====
+  const SUPABASE_URL = "https://fafdxaifluftnertbpvr.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_RNEAVQD2wZRtZojxVU11aA_Dacmf7db";
+  const TABLE_NAME = "db_sina_counsel";
+  let sb = null;
+  try {
+    if (!window.supabase) throw new Error("Supabase 라이브러리를 불러오지 못했습니다.");
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true }
+    });
+  } catch (err) {
+    console.error("Supabase 초기화 실패:", err);
+  }
+
+  // ===== 0) 로그인 가드 =====
+  async function guardLoginOrRedirect(){
+    if (!sb) return false;
+    const { data } = await sb.auth.getSession();
+    if (!data.session) {
+      alert("관리자 로그인이 필요한 화면입니다. 메인화면으로 이동합니다.");
+      window.location.href = "index.html";
+      return false;
+    }
+    return true;
+  }
+
+  // ===== 1) 연락처 자동 하이픈 포맷 =====
+  const clientPhoneEl = document.getElementById("clientPhone");
+  clientPhoneEl.addEventListener("input", () => {
+    let digits = clientPhoneEl.value.replace(/\D/g, "").slice(0, 11);
+    let formatted = digits;
+    if (digits.length > 3 && digits.length <= 7) {
+      formatted = digits.slice(0, 3) + "-" + digits.slice(3);
+    } else if (digits.length > 7) {
+      formatted = digits.slice(0, 3) + "-" + digits.slice(3, 7) + "-" + digits.slice(7);
+    }
+    clientPhoneEl.value = formatted;
+  });
+  function isValidPhone(value){ return /^\d{3}-\d{3,4}-\d{4}$/.test(value); }
+
+  // ===== 2) 나이 자동 계산 =====
   const birthDateInput = document.getElementById('birthDate');
   const ageInput = document.getElementById('age');
-
+  function isValidBirthDate(value){
+    const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return false;
+    const year = parseInt(m[1],10), month = parseInt(m[2],10), day = parseInt(m[3],10);
+    if (month < 1 || month > 12) return false;
+    const daysInMonth = new Date(year, month, 0).getDate();
+    if (day < 1 || day > daysInMonth) return false;
+    return true;
+  }
   function calcAge(dateStr) {
+    if (!isValidBirthDate(dateStr)) return '';
     const m = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) return '';
     const birth = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-    if (isNaN(birth.getTime())) return '';
     const today = new Date();
     let age = today.getFullYear() - birth.getFullYear();
     const monthDiff = today.getMonth() - birth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      age--;
-    }
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age--;
     return age >= 0 ? age + '세' : '';
   }
 
-  birthDateInput.addEventListener('input', () => {
-    ageInput.value = calcAge(birthDateInput.value.trim());
-  });
+  // ===== 3) KST 날짜/시간 표시 포맷 (YYYY-MM-DD HH:MM) =====
+  function formatKST(iso){
+    if (!iso) return '';
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Seoul",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hour12: false
+    }).formatToParts(new Date(iso));
+    const map = {};
+    parts.forEach(p => map[p.type] = p.value);
+    return `${map.year}-${map.month}-${map.day} ${map.hour}:${map.minute}`;
+  }
 
-  // 실시일 시작/종료 -> 상담시간 자동 계산 (분 단위)
-  const startDateInput = document.getElementById('startDate');
-  const endDateInput = document.getElementById('endDate');
+  // ===== 4) 상담시간(분) 계산 =====
   const durationInput = document.getElementById('duration');
-
-  function parseDateTime(str) {
-    const m = str.trim().match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/);
-    if (!m) return null;
-    const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]));
-    return isNaN(d.getTime()) ? null : d;
+  function calcDurationFromISO(startISO, endISO){
+    if (!startISO || !endISO) return '';
+    const diffMin = Math.round((new Date(endISO) - new Date(startISO)) / 60000);
+    return diffMin > 0 ? diffMin + '분' : '';
   }
 
-  function calcDuration() {
-    const start = parseDateTime(startDateInput.value);
-    const end = parseDateTime(endDateInput.value);
-    if (!start || !end || end <= start) {
-      durationInput.value = '';
-      return;
-    }
-    const diffMin = Math.round((end - start) / 60000);
-    durationInput.value = diffMin + '분';
-  }
-
-  startDateInput.addEventListener('input', calcDuration);
-  endDateInput.addEventListener('input', calcDuration);
-
-  // 상세 상담내용 글자수 카운트
+  // ===== 5) 상세 상담내용 글자수 카운트 =====
   const counselDetail = document.getElementById('counselDetail');
   const charCount = document.getElementById('charCount');
-  counselDetail.addEventListener('input', () => {
+
+  // ===== 6) lookup 테이블에서 옵션 동적 로딩 (상담등록 화면과 동일) =====
+  async function loadLookupOptions(tableName, selectEl){
+    if (!sb) { selectEl.innerHTML = `<option selected disabled value="">목록을 불러올 수 없습니다</option>`; return; }
+    const { data, error } = await sb.from(tableName).select("code, name, sort_order").eq("active", true).order("sort_order", { ascending: true });
+    if (error || !data || data.length === 0) {
+      console.error(tableName + " 로딩 실패:", error);
+      selectEl.innerHTML = `<option selected disabled value="">목록을 불러올 수 없습니다</option>`;
+      return;
+    }
+    let html = `<option value="">선택하세요</option>`;
+    data.forEach(row => { html += `<option value="${row.code}">${row.name}</option>`; });
+    selectEl.innerHTML = html;
+  }
+
+  // ===== 7) 상태 메시지 =====
+  const statusMsgEl = document.getElementById("statusMsg");
+  function showStatus(type, msg){
+    statusMsgEl.className = "statusMsg show " + type;
+    statusMsgEl.textContent = msg;
+    statusMsgEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function hideStatus(){ statusMsgEl.className = "statusMsg"; statusMsgEl.textContent = ""; }
+  function markInvalid(fieldEl, invalid){
+    if (invalid) fieldEl.classList.add("invalid"); else fieldEl.classList.remove("invalid");
+  }
+
+  // ===== 8) 조회 팝업: 1단계(전화번호 선택) -> 2단계(회기 선택) =====
+  const lookupOverlay = document.getElementById("lookupOverlay");
+  const lookupResultBox = document.getElementById("lookupResultBox");
+  const lookupTitleEl = document.getElementById("lookupTitle");
+  const lookupSubEl = document.getElementById("lookupSub");
+  let searchResults = [];
+  let currentRecordId = null;
+
+  function closeLookupModal(){ lookupOverlay.classList.remove("open"); }
+  lookupOverlay.addEventListener("click", (e) => { if (e.target === lookupOverlay) closeLookupModal(); });
+
+  document.getElementById("lookupBtn").addEventListener("click", async () => {
+    const name = document.getElementById("clientName").value.trim();
+    if (!name) { alert("내담자명을 입력해주세요."); return; }
+    if (!sb) { alert("조회 서버 연결에 실패했습니다."); return; }
+
+    lookupTitleEl.textContent = "전화번호 선택";
+    lookupSubEl.textContent = "동일한 이름으로 등록된 연락처입니다. 하나를 선택해주세요.";
+    lookupResultBox.innerHTML = `<div class="lookupEmpty">조회 중...</div>`;
+    lookupOverlay.classList.add("open");
+
+    const { data, error } = await sb
+      .from(TABLE_NAME)
+      .select("id, client_name, client_phone, Counseling_session, Consultation_start_time")
+      .eq("client_name", name)
+      .order("Consultation_start_time", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      lookupResultBox.innerHTML = `<div class="lookupEmpty">조회 중 오류가 발생했습니다. (로그인 상태를 확인해주세요)</div>`;
+      return;
+    }
+    if (!data || data.length === 0) {
+      lookupResultBox.innerHTML = `<div class="lookupEmpty">일치하는 내담자가 없습니다.</div>`;
+      return;
+    }
+
+    searchResults = data;
+    renderPhoneStep();
+  });
+
+  function renderPhoneStep(){
+    lookupTitleEl.textContent = "전화번호 선택";
+    lookupSubEl.textContent = "동일한 이름으로 등록된 연락처입니다. 하나를 선택해주세요.";
+    const phones = [...new Set(searchResults.map(r => r.client_phone))];
+    lookupResultBox.innerHTML = phones.map(p => `
+      <div class="lookupRow clickable" data-phone="${p}"><b>연락처</b><span>${p}</span></div>
+    `).join("");
+    lookupResultBox.querySelectorAll(".lookupRow[data-phone]").forEach(el => {
+      el.addEventListener("click", () => renderSessionStep(el.dataset.phone));
+    });
+  }
+
+  function renderSessionStep(phone){
+    lookupTitleEl.textContent = "회기 선택";
+    lookupSubEl.textContent = phone + " — 상담 회기를 선택해주세요.";
+    const rows = searchResults.filter(r => r.client_phone === phone);
+    const backHtml = `<div class="lookupRow clickable" id="backToPhone"><b>‹ 뒤로</b><span>전화번호 다시 선택</span></div>`;
+    lookupResultBox.innerHTML = backHtml + rows.map(r => `
+      <div class="lookupRow clickable" data-id="${r.id}">
+        <b>${r.Counseling_session ? r.Counseling_session + '회기' : '회기 미지정'}</b>
+        <span>${formatKST(r.Consultation_start_time) || '일정 미정'}</span>
+      </div>
+    `).join("");
+    document.getElementById("backToPhone").addEventListener("click", renderPhoneStep);
+    lookupResultBox.querySelectorAll(".lookupRow[data-id]").forEach(el => {
+      el.addEventListener("click", () => selectRecord(el.dataset.id));
+    });
+  }
+
+  async function selectRecord(id){
+    lookupResultBox.innerHTML = `<div class="lookupEmpty">불러오는 중...</div>`;
+    const { data, error } = await sb.from(TABLE_NAME).select("*").eq("id", id).single();
+    if (error || !data) {
+      console.error(error);
+      lookupResultBox.innerHTML = `<div class="lookupEmpty">불러오기 중 오류가 발생했습니다.</div>`;
+      return;
+    }
+    populateForm(data);
+    closeLookupModal();
+  }
+
+  function populateForm(record){
+    currentRecordId = record.id;
+    hideStatus();
+
+    document.getElementById("clientName").value = record.client_name || '';
+    clientPhoneEl.value = record.client_phone || '';
+    document.getElementById("job").value = record.client_job || '';
+    document.getElementById("gender").value = record.sex_code || '';
+    birthDateInput.value = record.Birth_date || '';
+    ageInput.value = calcAge(birthDateInput.value.trim());
+    document.getElementById("address").value = record.client_address || '';
+
+    document.getElementById("sessionNo").value = record.Counseling_session ? String(record.Counseling_session) : '';
+    document.getElementById("expectedDate").value = formatKST(record.appointment_at);
+    document.getElementById("startDate").value = formatKST(record.Consultation_start_time);
+    document.getElementById("endDate").value = formatKST(record.Consultation_end_time);
+    durationInput.value = calcDurationFromISO(record.Consultation_start_time, record.Consultation_end_time);
+
+    document.getElementById("testTool1").value = record.Inspection_tool1 || '';
+    document.getElementById("testTool2").value = record.Inspection_tool2 || '';
+    document.getElementById("testTool3").value = record.Inspection_tool3 || '';
+    document.getElementById("testTool4").value = record.Inspection_tool4 || '';
+
+    document.getElementById("consultationTarget").value = record.counsel_client_type || '';
+    document.getElementById("consultationTopic").value = record.counsel_topic || '';
+    counselDetail.value = record.Details_of_consultation || '';
     charCount.textContent = counselDetail.value.length;
+
+    ["clientName","clientPhone"].forEach(id => markInvalid(document.getElementById(id).parentElement, false));
+  }
+
+  // ===== 9) 저장(수정) - client_name / client_phone 만 UPDATE =====
+  const saveBtn = document.getElementById("saveBtn");
+  saveBtn.addEventListener("click", async () => {
+    hideStatus();
+
+    if (!currentRecordId) { showStatus("error", "먼저 내담자를 조회해주세요."); return; }
+    if (!sb) { showStatus("error", "저장 서버(Supabase) 연결에 실패했습니다."); return; }
+
+    const loggedIn = await guardLoginOrRedirect();
+    if (!loggedIn) return;
+
+    const clientName = document.getElementById("clientName").value.trim();
+    const clientPhone = clientPhoneEl.value.trim();
+
+    let hasError = false;
+    markInvalid(document.getElementById("clientName").parentElement, !clientName);
+    if (!clientName) hasError = true;
+
+    const phoneValid = isValidPhone(clientPhone);
+    markInvalid(clientPhoneEl.parentElement, !phoneValid);
+    if (!phoneValid) hasError = true;
+
+    if (hasError) {
+      showStatus("error", "내담자명과 연락처를 올바르게 입력해주세요.");
+      return;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = "저장 중...";
+
+    const { error } = await sb
+      .from(TABLE_NAME)
+      .update({ client_name: clientName, client_phone: clientPhone })
+      .eq("id", currentRecordId);
+
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '<i class="ti ti-device-floppy" aria-hidden="true"></i>수정/저장';
+
+    if (error) {
+      console.error(error);
+      showStatus("error", "저장 중 오류가 발생했습니다: " + error.message);
+      return;
+    }
+
+    showStatus("success", "내담자명/연락처가 정상적으로 저장되었습니다.");
   });
 
-  // 조회 버튼 (Supabase SELECT 연동 지점 - 추후 작업)
-  document.getElementById('searchBtn').addEventListener('click', () => {
-    alert('조회 기능은 Supabase 연동 후 동작합니다.');
-  });
-
-  // 저장 버튼 (Supabase INSERT/UPDATE 연동 지점 - 추후 작업)
-  document.getElementById('saveBtn').addEventListener('click', () => {
-    alert('저장 기능은 Supabase 연동 후 동작합니다.');
+  // ===== 10) 초기화 =====
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    currentRecordId = null;
+    hideStatus();
+    setTimeout(() => {
+      charCount.textContent = "0";
+      ageInput.value = "";
+      durationInput.value = "";
+    }, 0);
   });
 
   document.getElementById('homeBtn').addEventListener('click', () => {
     window.location.href = 'index.html';
   });
+
+  // ===== 11) 초기화(페이지 로드) =====
+  (async function initPage(){
+    await guardLoginOrRedirect();
+    loadLookupOptions("sex_codes", document.getElementById("gender"));
+    loadLookupOptions("job_codes", document.getElementById("job"));
+    loadLookupOptions("counsel_client_type", document.getElementById("consultationTarget"));
+    loadLookupOptions("counsel_topic", document.getElementById("consultationTopic"));
+  })();
 </script>
 
 </body>
