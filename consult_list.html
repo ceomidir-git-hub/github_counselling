@@ -495,28 +495,6 @@ button,input,select,textarea{font:inherit}
   <!-- 결과 카드 리스트 -->
   <div id="consultListBody">
     <div class="emptyCard" id="emptyState">등록된 상담 진행 내역이 없습니다.</div>
-    <!-- 카드 예시 (실 데이터 연결 전 화면 확인용, Supabase 연결 시 스크립트로 대체됩니다) -->
-    <!--
-    <div class="clientCard" onclick="openDetailModal(...)">
-      <div class="clientCardTop">
-        <div class="clientNameWrap">
-          <b>홍길동</b>
-          <span class="genderAge">남 · 34세</span>
-        </div>
-        <span class="clientPhone">010-1234-5678</span>
-      </div>
-      <div class="chips">
-        <span class="chip">개인상담</span>
-        <span class="chip topic">진로/직업상담</span>
-      </div>
-      <div class="meta">
-        <div><b>직업</b><span>회사원</span></div>
-        <div><b>최종회기</b><span>3회기</span></div>
-        <div><b>최초상담일</b><span>2026-03-02</span></div>
-        <div><b>최종상담일</b><span>2026-05-10</span></div>
-      </div>
-    </div>
-    -->
   </div>
 
 </section>
@@ -619,14 +597,65 @@ function updateLoginButton(){
   }
 }
 
-async function initAuth(){
-  if (!sb) { updateLoginButton(); return; }
+// ===== 코드 → 한글명 매핑 테이블 (lookup 테이블에서 로드) =====
+const codeMaps = {
+  sex: {},
+  job: {},
+  target: {},   // counsel_client_type
+  topic: {}     // counsel_topic
+};
+
+async function loadCodeMaps(){
+  if (!sb) return;
+  try {
+    const [sexRes, jobRes, targetRes, topicRes] = await Promise.all([
+      sb.from('sex_codes').select('code,name'),
+      sb.from('job_codes').select('code,name'),
+      sb.from('counsel_client_type').select('code,name'),
+      sb.from('counsel_topic').select('code,name')
+    ]);
+    (sexRes.data || []).forEach(r => codeMaps.sex[r.code] = r.name);
+    (jobRes.data || []).forEach(r => codeMaps.job[r.code] = r.name);
+    (targetRes.data || []).forEach(r => codeMaps.target[r.code] = r.name);
+    (topicRes.data || []).forEach(r => codeMaps.topic[r.code] = r.name);
+  } catch (err) {
+    console.error('코드 매핑 로드 실패:', err);
+  }
+}
+
+function labelSex(code){ return codeMaps.sex[code] || code || '-'; }
+function labelJob(code){ return codeMaps.job[code] || code || '-'; }
+function labelTarget(code){ return codeMaps.target[code] || code || '-'; }
+function labelTopic(code){ return codeMaps.topic[code] || code || '-'; }
+
+// ===== 로그인 가드: 비로그인 상태면 메인화면으로 이동 (조회/저장과 동일) =====
+async function guardLoginOrRedirect(){
+  if (!sb) return false;
   const { data } = await sb.auth.getSession();
   currentSession = data.session;
+  if (!currentSession) {
+    alert('로그인이 필요한 화면입니다. 메인화면으로 이동합니다.');
+    window.location.href = 'index.html';
+    return false;
+  }
+  return true;
+}
+
+async function initAuth(){
+  if (!sb) { updateLoginButton(); return; }
+  const ok = await guardLoginOrRedirect();
   updateLoginButton();
+  if (!ok) return;
+
+  await loadCodeMaps();
+
   sb.auth.onAuthStateChange((_event, session) => {
     currentSession = session;
     updateLoginButton();
+    if (!session) {
+      alert('로그인이 종료되어 메인화면으로 이동합니다.');
+      window.location.href = 'index.html';
+    }
   });
 }
 initAuth();
@@ -651,16 +680,52 @@ resetButton.addEventListener("click", () => {
 });
 
 searchButton.addEventListener("click", async () => {
-  // TODO: Supabase 실 조회 로직은 별도 승인 후 연결 예정
-  // 예시:
-  // let query = sb.from(TABLE_NAME).select('*');
-  // if (clientName.value) query = query.ilike('client_name', `%${clientName.value}%`);
-  // if (phoneNumber.value) query = query.ilike('client_phone', `%${phoneNumber.value}%`);
-  // if (startDate.value) query = query.gte('received_at', startDate.value);
-  // if (endDate.value) query = query.lte('received_at', endDate.value);
-  // const { data, error } = await query;
-  // renderList(data || []);
-  alert('조회 기능은 다음 단계에서 Supabase와 연결됩니다.');
+  const ok = await guardLoginOrRedirect();
+  if (!ok) return;
+
+  if (!sb) {
+    alert('데이터베이스 연결에 실패했습니다. 인터넷 연결을 확인해주세요.');
+    return;
+  }
+
+  searchButton.disabled = true;
+  const originalLabel = searchButton.textContent;
+  searchButton.textContent = '조회 중...';
+
+  try {
+    // 기간/이름/전화번호는 개별 또는 조합(AND)으로 적용됩니다.
+    // 기간 필터는 실제 상담이 진행된 날짜인 appointment_at 기준입니다.
+    let query = sb.from(TABLE_NAME).select('*');
+
+    if (clientName.value.trim()) {
+      query = query.ilike('client_name', `%${clientName.value.trim()}%`);
+    }
+    if (phoneNumber.value.trim()) {
+      query = query.ilike('client_phone', `%${phoneNumber.value.trim()}%`);
+    }
+    if (startDate.value) {
+      query = query.gte('appointment_at', `${startDate.value}T00:00:00`);
+    }
+    if (endDate.value) {
+      query = query.lte('appointment_at', `${endDate.value}T23:59:59`);
+    }
+
+    query = query.order('appointment_at', { ascending: false });
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('조회 실패:', error);
+      alert('조회 중 오류가 발생했습니다: ' + error.message);
+      renderList([]);
+      return;
+    }
+
+    renderList(data || []);
+  } finally {
+    searchButton.disabled = false;
+    searchButton.textContent = originalLabel;
+  }
 });
 
 function calcAge(birthDateStr){
@@ -692,24 +757,37 @@ function renderList(records){
       <div class="clientCardTop">
         <div class="clientNameWrap">
           <b>${r.client_name || '-'}</b>
-          <span class="genderAge">${r.sex_code || '-'} · ${calcAge(r.Birth_date)}세</span>
+          <span class="genderAge">${labelSex(r.sex_code)} · ${calcAge(r.Birth_date)}세</span>
         </div>
         <span class="clientPhone">${r.client_phone || '-'}</span>
       </div>
       <div class="chips">
-        <span class="chip">${r.counsel_client_type || '-'}</span>
-        <span class="chip topic">${r.counsel_topic || '-'}</span>
+        <span class="chip">${labelTarget(r.counsel_client_type)}</span>
+        <span class="chip topic">${labelTopic(r.counsel_topic)}</span>
       </div>
       <div class="meta">
-        <div><b>직업</b><span>${r.client_job || '-'}</span></div>
-        <div><b>최종회기</b><span>${r.Counseling_session || '-'}회기</span></div>
-        <div><b>최초상담일</b><span>${r.received_at ? r.received_at.slice(0,10) : '-'}</span></div>
-        <div><b>최종상담일</b><span>${r.appointment_at ? r.appointment_at.slice(0,10) : '-'}</span></div>
+        <div><b>직업</b><span>${labelJob(r.client_job)}</span></div>
+        <div><b>회기</b><span>${r.Counseling_session || '-'}회기</span></div>
+        <div><b>상담일</b><span>${r.appointment_at ? r.appointment_at.slice(0,10) : '-'}</span></div>
+        <div><b>상담시간</b><span>${formatTimeRange(r.Consultation_start_time, r.Consultation_end_time)}</span></div>
       </div>
     `;
     card.addEventListener('click', () => openDetailModal(r));
     consultListBody.appendChild(card);
   });
+}
+
+function formatTimeRange(start, end){
+  const toHM = (v) => {
+    if (!v) return null;
+    const d = new Date(v);
+    if (isNaN(d.getTime())) return null;
+    return d.toTimeString().slice(0,5);
+  };
+  const s = toHM(start);
+  const e = toHM(end);
+  if (!s && !e) return '-';
+  return `${s || '-'}~${e || '-'}`;
 }
 
 // ===== 상세 모달 =====
@@ -722,22 +800,23 @@ const detailNote = document.getElementById('detailNote');
 
 function openDetailModal(r){
   detailName.textContent = r.client_name || '-';
-  detailSubInfo.textContent = `${r.sex_code || '-'} · ${calcAge(r.Birth_date)}세 · ${r.client_phone || '-'}`;
+  detailSubInfo.textContent = `${labelSex(r.sex_code)} · ${calcAge(r.Birth_date)}세 · ${r.client_phone || '-'}`;
   detailChips.innerHTML = `
-    <span class="chip">${r.counsel_client_type || '-'}</span>
-    <span class="chip topic">${r.counsel_topic || '-'}</span>
+    <span class="chip">${labelTarget(r.counsel_client_type)}</span>
+    <span class="chip topic">${labelTopic(r.counsel_topic)}</span>
   `;
   detailMeta.innerHTML = `
     <div><b>주소</b><span>${r.client_address || '-'}</span></div>
-    <div><b>최종회기</b><span>${r.Counseling_session || '-'}회기</span></div>
-    <div><b>실시 시작</b><span>${r.Consultation_start_time || '-'}</span></div>
-    <div><b>실시 종료</b><span>${r.Consultation_end_time || '-'}</span></div>
+    <div><b>회기</b><span>${r.Counseling_session || '-'}회기</span></div>
+    <div><b>실시 시작</b><span>${r.Consultation_start_time ? new Date(r.Consultation_start_time).toLocaleString('ko-KR') : '-'}</span></div>
+    <div><b>실시 종료</b><span>${r.Consultation_end_time ? new Date(r.Consultation_end_time).toLocaleString('ko-KR') : '-'}</span></div>
     <div><b>검사도구1</b><span>${r.Inspection_tool1 || '-'}</span></div>
     <div><b>검사도구2</b><span>${r.Inspection_tool2 || '-'}</span></div>
     <div><b>검사도구3</b><span>${r.Inspection_tool3 || '-'}</span></div>
     <div><b>검사도구4</b><span>${r.Inspection_tool4 || '-'}</span></div>
   `;
   detailNote.textContent = r.Details_of_consultation || '상세 상담내용이 없습니다.';
+  // TODO: 다음 단계에서 이 버튼을 consultation_edit_save.html?id=${r.id} 로 바로 이동하도록 연동 예정
   detailOverlay.classList.add('open');
 }
 
