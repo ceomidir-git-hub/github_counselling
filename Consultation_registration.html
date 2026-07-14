@@ -232,8 +232,23 @@
   .lookupRow span{ color:#111827; text-align:right; max-width:60%; }
   .lookupEmpty{ font-size:14px; color:#6b7280; padding:14px 0; text-align:center; }
 
-  @media (max-width: 640px) {
-    .grid, .grid.cols-3, .grid.cols-4, .test-tools-row { grid-template-columns: 1fr; }
+  /* =========================================================
+     모바일 · 테블릿 대응
+     원인: .grid.session-row / .grid.next-session-row 는 클래스 2개(specificity ↑)라서
+     기존 ".grid { grid-template-columns:1fr }" 규칙보다 우선 적용되어
+     모바일/테블릿에서도 5열·2열이 그대로 고정되던 문제를 수정.
+     ========================================================= */
+  @media (max-width: 1024px) {
+    .grid,
+    .grid.cols-3,
+    .grid.cols-4,
+    .grid.session-row,
+    .grid.next-session-row,
+    .test-tools-row {
+      grid-template-columns: 1fr;
+    }
+    .grid.next-session-row { max-width: 100%; }
+    .container { padding: 22px 20px 28px; }
     .actions { flex-wrap: wrap; }
   }
 </style>
