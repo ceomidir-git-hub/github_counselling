@@ -435,7 +435,6 @@ button,input,select,textarea{font:inherit}
        <button class="sheetClose" onclick="closeSheet()">✕</button>
       </div>
       <div class="sheetBody" id="sheetList"></div>
-      <button class="addBtn" id="addBtn">+ 이 날짜에 예약 추가</button>
      </div>
 
      <nav class="tabs">
@@ -627,7 +626,6 @@ button,input,select,textarea{font:inherit}
       const d = new Date(2026, 6, day);
       const wd = weekdayNames[d.getDay()];
       document.getElementById('sheetTitle').textContent = '7월 ' + day + '일 (' + wd + ') 예약';
-      document.getElementById('addBtn').textContent = '+ 7월 ' + day + '일에 예약 추가';
 
       const items = scheduleData[day] || [];
       const listEl = document.getElementById('sheetList');
