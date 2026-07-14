@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>상담도우미 - 통계</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --blue:#0b4ea2;
+  --blue2:#1565d8;
+  --bg:#f3f7fc;
+  --card:#fff;
+  --ink:#111827;
+  --muted:#64748b;
+  --line:#e5e7eb;
+  --red:#ef4444;
+  --orange:#f97316;
+  --yellow:#eab308;
+  --green:#22c55e;
+  --violet:#7c3aed;
+  --shadow:0 18px 50px rgba(15,23,42,.18);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:linear-gradient(135deg,#eaf3ff,#fbfdff);
+  color:var(--ink);
+}
+button,select{font:inherit}
+.wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px 10px}
+.phone{width:min(430px,100%);height:900px;background:#111;border-radius:42px;padding:12px;box-shadow:var(--shadow)}
+.screen{height:100%;border-radius:32px;background:var(--bg);overflow:hidden;position:relative;display:flex;flex-direction:column}
+
+.top{height:92px;flex:0 0 auto;background:linear-gradient(135deg,#073b86,#0d63ce);color:#fff;padding:12px 18px 10px;position:relative}
+.pill{position:absolute;left:50%;top:12px;transform:translateX(-50%);width:116px;height:27px;background:#06152c;border-radius:999px}
+.status{display:flex;justify-content:space-between;font-size:13px;font-weight:800;margin-bottom:9px}
+.brand{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+.brand .name{font-size:19px;font-weight:800;display:flex;align-items:center;gap:6px}
+.brand .back{font-size:13px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:999px;padding:6px 12px;text-decoration:none}
+
+.content{flex:1 1 auto;overflow-y:auto;padding:16px 16px 90px}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.kpi-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.kpi-card h3{margin:0 0 6px;font-size:12px;color:var(--muted);font-weight:700}
+.kpi-card .value{font-size:20px;font-weight:800;color:var(--blue)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.card h2{margin:0 0 4px;font-size:16px;font-weight:800;color:var(--ink)}
+.card p.desc{margin:0 0 12px;font-size:12px;color:var(--muted)}
+.chart-box{position:relative;height:220px}
+
+.filter-row{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.filter-row select{flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:13px;background:#fff;color:var(--ink)}
+
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:11px}
+th,td{border:1px solid var(--line);padding:6px 4px;text-align:center}
+th{background:#f3f7fc;color:var(--muted);font-weight:700}
+.total-row td{background:#eef6ff;font-weight:800}
+.note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5}
+
+.tabs{flex:0 0 auto;display:flex;border-top:1px solid var(--line);background:#fff}
+.tabs a{flex:1;text-align:center;padding:10px 0 8px;text-decoration:none;color:var(--muted);font-size:11px;font-weight:700}
+.tabs a .ic{display:block;font-size:17px;margin-bottom:2px}
+.tabs a.active{color:var(--blue)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="phone">
+    <div class="screen">
+
+      <div class="top">
+        <div class="pill"></div>
+        <div class="status"><span>9:41</span><span>🔋 100%</span></div>
+        <div class="brand">
+          <div class="name">💬 통계</div>
+          <a class="back" href="index.html">홈으로</a>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <div class="kpi-grid">
+          <div class="kpi-card"><h3>전체 상담건수 (2025)</h3><div class="value">491건</div></div>
+          <div class="kpi-card"><h3>월평균 상담건수</h3><div class="value">40.9건</div></div>
+          <div class="kpi-card"><h3>평균연령</h3><div class="value">31.8세</div></div>
+          <div class="kpi-card"><h3>상담대상 · 주제</h3><div class="value">5개 · 8개</div></div>
+        </div>
+
+        <div class="card">
+          <h2>1. 전체 상담건수 추이</h2>
+          <p class="desc">2025년 1~12월 월별 상담건수</p>
+          <div class="chart-box"><canvas id="chart1"></canvas></div>
+        </div>
+
+        <div class="card">
+          <h2>2. 상담대상별 추이</h2>
+          <p class="desc">항목을 선택하면 해당 대상의 월별 추이만 표시됩니다</p>
+          <div class="filter-row">
+            <select id="targetSelect"></select>
+          </div>
+          <div class="chart-box"><canvas id="chart2"></canvas></div>
+        </div>
+
+        <div class="card">
+          <h2>3. 상담주제별 추이</h2>
+          <p class="desc">항목을 선택하면 해당 주제의 월별 추이만 표시됩니다</p>
+          <div class="filter-row">
+            <select id="topicSelect"></select>
+          </div>
+          <div class="chart-box"><canvas id="chart3"></canvas></div>
+        </div>
+
+        <div class="card">
+          <h2>4. 월별 상담건수 vs 월평균</h2>
+          <p class="desc">월평균(40.9건) 기준선 대비 월별 증감</p>
+          <div class="chart-box"><canvas id="chart4"></canvas></div>
+        </div>
+
+        <div class="card">
+          <h2>5. 평균연령 추이</h2>
+          <p class="desc">2025년 월별 내담자 평균연령</p>
+          <div class="chart-box"><canvas id="chart5"></canvas></div>
+        </div>
+
+        <div class="card">
+          <h2>원자료 표 (2025년)</h2>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>월</th><th>건수</th><th>평균연령</th></tr></thead>
+              <tbody id="rawTableBody"></tbody>
+            </table>
+          </div>
+          <p class="note">
+            ※ 기준: db_sina_counsel_rows.csv의 received_at(KST 변환) 중 2025년 1~12월 데이터만 집계 (491건).<br/>
+            ※ 2024년 12월분 9건, 2026년 7월 이상치 2건(총 11건)은 연간 비교의 일관성을 위해 이번 통계에서 제외했습니다. 이 부분 포함 여부는 확인 후 조정 가능합니다.<br/>
+            ※ 상담주제 코드 중 "대인관계(INTERPERSONAL)"는 2025년 실제 등록 건수가 0건이라 표에서는 보이나 그래프 선택 목록에서는 참고용으로만 남겨두었습니다.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="tabs">
+        <a href="index.html"><span class="ic">🏠</span>홈</a>
+        <a href="consult_receipt_register.html"><span class="ic">📝</span>예약등록</a>
+        <a href="Consultation_registration.html"><span class="ic">➕</span>상담등록</a>
+        <a href="consultation_edit_save.html"><span class="ic">🔍</span>조회·저장</a>
+        <a href="#" class="active"><span class="ic">📊</span>통계</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const dashboardData = {"monthLabels": ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"], "monthlyTotal": [26, 48, 41, 45, 35, 48, 44, 39, 41, 43, 43, 38], "monthlyAvg": 40.9, "monthlyAge": [33.9, 31.8, 31.9, 31.4, 32.7, 32.0, 27.9, 29.2, 34.1, 28.8, 35.6, 34.1], "targetLabels": ["개인상담", "집단상담", "커플/부부상담", "가족상담", "기타"], "targetData": {"개인상담": [6, 10, 5, 14, 3, 10, 13, 3, 10, 11, 9, 5], "집단상담": [4, 8, 7, 8, 10, 9, 8, 11, 8, 10, 9, 6], "커플/부부상담": [7, 14, 8, 10, 6, 5, 7, 12, 9, 4, 5, 12], "가족상담": [5, 4, 8, 7, 11, 13, 10, 5, 6, 9, 10, 9], "기타": [4, 12, 13, 6, 5, 11, 6, 8, 8, 9, 10, 6]}, "topicLabels": ["심리/정서상담", "진로/직업상담", "가족상담", "비행/중독상담", "기업상담", "재무상담", "대인관계", "부부상담", "기타"], "topicData": {"심리/정서상담": [4, 7, 1, 11, 1, 8, 10, 1, 5, 6, 6, 2], "진로/직업상담": [3, 2, 7, 3, 9, 8, 5, 8, 3, 2, 6, 6], "가족상담": [5, 5, 4, 4, 6, 5, 4, 6, 5, 6, 4, 6], "비행/중독상담": [2, 5, 3, 7, 7, 6, 3, 5, 5, 8, 7, 4], "기업상담": [6, 4, 7, 3, 2, 8, 5, 2, 6, 8, 5, 6], "재무상담": [1, 8, 5, 4, 4, 4, 5, 10, 3, 5, 7, 4], "대인관계": [0,0,0,0,0,0,0,0,0,0,0,0], "부부상담": [3, 11, 6, 8, 5, 3, 5, 4, 7, 3, 2, 5], "기타": [2, 6, 8, 5, 1, 6, 7, 3, 7, 5, 6, 5]}, "overallTotal": 491, "overallAvgAge": 31.8};
+const monthLabels = dashboardData.monthLabels;
+const BLUE = '#0b4ea2';
+const BLUE2 = '#1565d8';
+
+const lineOptions = (yLabel) => ({
+  responsive:true, maintainAspectRatio:false,
+  plugins:{ legend:{ display:false } },
+  scales:{
+    x:{ ticks:{ font:{size:10} }, grid:{ display:false } },
+    y:{ beginAtZero:true, ticks:{ font:{size:10} } }
+  }
+});
+
+// 1. 전체 상담건수
+new Chart(document.getElementById('chart1'), {
+  type:'line',
+  data:{ labels:monthLabels, datasets:[{ label:'상담건수', data:dashboardData.monthlyTotal, borderColor:BLUE, backgroundColor:'rgba(11,78,162,.12)', fill:true, tension:.3, pointRadius:3 }] },
+  options:lineOptions()
+});
+
+// 2. 상담대상별 (드롭다운 선택형 단일 라인)
+const targetSelect = document.getElementById('targetSelect');
+dashboardData.targetLabels.forEach(l => { const o=document.createElement('option'); o.value=l; o.textContent=l; targetSelect.appendChild(o); });
+let chart2 = new Chart(document.getElementById('chart2'), {
+  type:'line',
+  data:{ labels:monthLabels, datasets:[{ label:targetSelect.value, data:dashboardData.targetData[targetSelect.value], borderColor:BLUE2, backgroundColor:'rgba(21,101,216,.12)', fill:true, tension:.3, pointRadius:3 }] },
+  options:lineOptions()
+});
+targetSelect.addEventListener('change', () => {
+  chart2.data.datasets[0].label = targetSelect.value;
+  chart2.data.datasets[0].data = dashboardData.targetData[targetSelect.value];
+  chart2.update();
+});
+
+// 3. 상담주제별 (드롭다운 선택형 단일 라인)
+const topicSelect = document.getElementById('topicSelect');
+dashboardData.topicLabels.forEach(l => { const o=document.createElement('option'); o.value=l; o.textContent=l; topicSelect.appendChild(o); });
+let chart3 = new Chart(document.getElementById('chart3'), {
+  type:'line',
+  data:{ labels:monthLabels, datasets:[{ label:topicSelect.value, data:dashboardData.topicData[topicSelect.value], borderColor:'#7c3aed', backgroundColor:'rgba(124,58,237,.12)', fill:true, tension:.3, pointRadius:3 }] },
+  options:lineOptions()
+});
+topicSelect.addEventListener('change', () => {
+  chart3.data.datasets[0].label = topicSelect.value;
+  chart3.data.datasets[0].data = dashboardData.topicData[topicSelect.value];
+  chart3.update();
+});
+
+// 4. 월별 vs 월평균
+new Chart(document.getElementById('chart4'), {
+  type:'line',
+  data:{ labels:monthLabels, datasets:[
+    { label:'상담건수', data:dashboardData.monthlyTotal, borderColor:BLUE, backgroundColor:'rgba(11,78,162,.10)', fill:true, tension:.3, pointRadius:3 },
+    { label:`월평균 ${dashboardData.monthlyAvg}건`, data:Array(12).fill(dashboardData.monthlyAvg), borderColor:'#ef4444', borderDash:[6,5], pointRadius:0 }
+  ] },
+  options:{ ...lineOptions(), plugins:{ legend:{ display:true, position:'bottom', labels:{ font:{size:10}, boxWidth:12 } } } }
+});
+
+// 5. 평균연령
+new Chart(document.getElementById('chart5'), {
+  type:'line',
+  data:{ labels:monthLabels, datasets:[{ label:'평균연령', data:dashboardData.monthlyAge, borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.12)', fill:true, tension:.3, pointRadius:3 }] },
+  options:lineOptions()
+});
+
+// 원자료 표
+const tbody = document.getElementById('rawTableBody');
+tbody.innerHTML = monthLabels.map((m,i) => `<tr><td>${m}</td><td>${dashboardData.monthlyTotal[i]}</td><td>${dashboardData.monthlyAge[i]}</td></tr>`).join('')
+  + `<tr class="total-row"><td>전체</td><td>${dashboardData.overallTotal}</td><td>${dashboardData.overallAvgAge}</td></tr>`;
+</script>
+</body>
+</html>
