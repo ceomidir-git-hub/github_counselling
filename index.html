@@ -260,6 +260,11 @@ button,input,select,textarea{
 .stat strong{
     font-size:20px}
 
+.stat strong.placeholder{
+    font-size:12px;
+    color:var(--muted);
+    font-weight:800}
+
 .card,.form{
     background:#fff;
     border:1px solid var(--line);
@@ -747,42 +752,34 @@ button,input,select,textarea{
       </div>
       <div class="title">
        📌 오늘 요약
-       <small>
+       <small id="summaryDateLabel">
         예시 데이터
        </small>
       </div>
       <div class="summary">
        <div class="stat">
         <small>
-         전체
+         당월전체
         </small>
-        <strong>
-         545
-        </strong>
+        <strong id="statTotal">-</strong>
        </div>
        <div class="stat">
         <small>
-         1등급
+         당월실적
         </small>
-        <strong>
-         208
-        </strong>
+        <strong id="statDone">-</strong>
        </div>
        <div class="stat">
         <small>
-         진행중
+         오늘건수
         </small>
-        <strong>
-         50
-        </strong>
+        <strong id="statToday">-</strong>
        </div>
        <div class="stat">
         <small>
-         완료
+         당월잔존
         </small>
-        <strong>
-         451
-        </strong>
+        <strong id="statRemain">-</strong>
        </div>
       </div>
       <div class="title">
@@ -982,6 +979,7 @@ button,input,select,textarea{
         loginLabel.textContent = '로그인';
       }
       updateMenuLockState();
+      updateSummaryCard();
     }
 
     // ===== 메뉴 잠금 처리: 예약등록을 제외한 모든 메뉴는 로그인 전 잠금 =====
@@ -1009,6 +1007,108 @@ button,input,select,textarea{
     loginOverlay.addEventListener('click', (e) => {
       if (e.target === loginOverlay) closeLoginModal();
     });
+
+    // ===== 오늘 요약 카드: 당월전체 / 당월실적 / 오늘건수 / 당월잔존 =====
+    // 모든 판단은 한국시간(KST, UTC+9) 기준으로 계산한다.
+    const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+    // DB의 timestamptz(UTC) 문자열 → KST로 보정된 Date 객체로 변환
+    function toKstDate(utcString){
+      if (!utcString) return null;
+      const utcMs = new Date(utcString).getTime();
+      if (Number.isNaN(utcMs)) return null;
+      return new Date(utcMs + KST_OFFSET_MS);
+    }
+
+    // KST 기준 "YYYY-MM-DD" 날짜키 추출 (getUTC* 사용: 이미 +9시간 보정된 값이므로)
+    function kstDateKey(kstDate){
+      const y = kstDate.getUTCFullYear();
+      const m = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
+      const d = String(kstDate.getUTCDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function kstYearMonthKey(kstDate){
+      const y = kstDate.getUTCFullYear();
+      const m = String(kstDate.getUTCMonth() + 1).padStart(2, '0');
+      return `${y}-${m}`;
+    }
+
+    async function updateSummaryCard(){
+      const elTotal = document.getElementById('statTotal');
+      const elDone = document.getElementById('statDone');
+      const elToday = document.getElementById('statToday');
+      const elRemain = document.getElementById('statRemain');
+      const elDateLabel = document.getElementById('summaryDateLabel');
+
+      // 로그인 전: RLS 정책상 select가 막혀 있으므로 안내만 표시
+      if (!isLoggedIn()) {
+        [elTotal, elDone, elToday, elRemain].forEach(el => {
+          el.textContent = '🔒';
+          el.classList.add('placeholder');
+        });
+        if (elDateLabel) elDateLabel.textContent = '로그인 후 확인 가능';
+        return;
+      }
+
+      [elTotal, elDone, elToday, elRemain].forEach(el => el.classList.remove('placeholder'));
+
+      if (!sb) {
+        [elTotal, elDone, elToday, elRemain].forEach(el => { el.textContent = '오류'; });
+        return;
+      }
+
+      try {
+        const { data, error } = await sb
+          .from('db_sina_counsel')
+          .select('appointment_at, Consultation_end_time');
+
+        if (error) throw error;
+
+        const nowKst = toKstDate(new Date().toISOString());
+        const thisMonthKey = kstYearMonthKey(nowKst);
+        const todayKey = kstDateKey(nowKst);
+
+        let total = 0;   // 당월전체
+        let done = 0;    // 당월실적 (당월 + 종료시각 경과)
+        let today = 0;   // 오늘건수
+        const nowMs = nowKst.getTime();
+
+        (data || []).forEach(row => {
+          const apptKst = toKstDate(row.appointment_at);
+          if (!apptKst) return;
+
+          const apptMonthKey = kstYearMonthKey(apptKst);
+          const apptDateKey = kstDateKey(apptKst);
+
+          if (apptMonthKey === thisMonthKey) {
+            total += 1;
+
+            const endKst = toKstDate(row.Consultation_end_time);
+            if (endKst && endKst.getTime() <= nowMs) {
+              done += 1;
+            }
+          }
+
+          if (apptDateKey === todayKey) {
+            today += 1;
+          }
+        });
+
+        const remain = total - done;
+
+        elTotal.textContent = total;
+        elDone.textContent = done;
+        elToday.textContent = today;
+        elRemain.textContent = remain;
+        if (elDateLabel) {
+          elDateLabel.textContent = `${thisMonthKey} 기준 (KST)`;
+        }
+      } catch (err) {
+        console.error('오늘 요약 데이터 조회 실패:', err);
+        [elTotal, elDone, elToday, elRemain].forEach(el => { el.textContent = '오류'; });
+      }
+    }
 
     // ===== 로그인 상태 초기화 및 실시간 반영 =====
     async function initAuth(){
