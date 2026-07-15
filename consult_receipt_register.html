@@ -273,6 +273,40 @@
       color: var(--red);
     }
 
+    /* 로그인 필요 안내 배너 */
+    .loginNotice {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 850;
+      margin-bottom: 14px;
+    }
+
+    .loginNotice.show { display: flex; }
+
+    .loginNotice .msg { flex: 1; line-height: 1.5; }
+
+    .loginNotice .loginNowBtn {
+      flex: 0 0 auto;
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 9px;
+      border: 0;
+      background: #0b63e5;
+      color: #fff;
+      font-weight: 900;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
     .field.invalid, select.invalid {
       border-color: var(--red);
       box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.10);
@@ -336,6 +370,11 @@
 
         <div class="container">
           <h1 class="page-title">접수 상담 등록</h1>
+
+          <div class="loginNotice" id="loginNotice">
+            <span class="msg">로그인이 필요한 화면입니다. 로그인 후 등록할 수 있습니다.</span>
+            <button type="button" class="loginNowBtn" onclick="location.href='index.html'">메인으로</button>
+          </div>
 
           <div class="statusMsg" id="statusMsg"></div>
 
@@ -646,7 +685,28 @@
       else el.classList.remove("invalid");
     }
 
+    // ===== 6-1) 로그인 필요 안내 / 등록 버튼 잠금 처리 =====
+    const loginNoticeEl = document.getElementById("loginNotice");
+    const submitBtn = document.getElementById("submitBtn");
+    let currentSession = null;
+
+    function isLoggedIn() {
+      return !!currentSession;
+    }
+
+    function updateLoginGate() {
+      if (isLoggedIn()) {
+        loginNoticeEl.classList.remove("show");
+        submitBtn.disabled = false;
+      } else {
+        loginNoticeEl.classList.add("show");
+        submitBtn.disabled = true;
+      }
+    }
+
     // ===== 7) Supabase 연결: 실패해도 위 UI 동작에는 영향 없도록 별도 처리 =====
+    // index.html과 동일하게 sessionStorage를 세션 저장소로 지정해야
+    // 화면 간 이동 시 로그인 상태가 정상적으로 공유됩니다.
     const SUPABASE_URL = "https://fafdxaifluftnertbpvr.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_RNEAVQD2wZRtZojxVU11aA_Dacmf7db";
     let sb = null;
@@ -655,7 +715,13 @@
       if (!window.supabase) {
         throw new Error("Supabase 라이브러리를 불러오지 못했습니다 (네트워크/CDN 차단 가능성).");
       }
-      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          storage: window.sessionStorage, // 브라우저 창을 닫으면 세션 자동 종료 (index.html과 동일)
+          persistSession: true,
+          autoRefreshToken: true
+        }
+      });
     } catch (err) {
       sbInitError = err;
       console.error("Supabase 초기화 실패:", err);
@@ -691,9 +757,27 @@
     loadLookupOptions("counsel_client_type", document.getElementById("consultationTarget"));
     loadLookupOptions("counsel_topic", document.getElementById("consultationTopic"));
 
+    // ===== 7-2) 로그인 상태 초기화 및 실시간 반영 =====
+    async function initAuth() {
+      // Supabase 연결 실패 시에도 화면은 항상 "로그인 필요" 상태로 안전하게 표시
+      if (!sb) {
+        currentSession = null;
+        updateLoginGate();
+        return;
+      }
+      const { data } = await sb.auth.getSession();
+      currentSession = data.session;
+      updateLoginGate();
+
+      sb.auth.onAuthStateChange((_event, session) => {
+        currentSession = session;
+        updateLoginGate();
+      });
+    }
+    initAuth();
+
     // ===== 8) 등록(제출) 처리 =====
     const form = document.getElementById("consultForm");
-    const submitBtn = document.getElementById("submitBtn");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -701,6 +785,13 @@
 
       if (!sb) {
         showStatus("error", "저장 서버(Supabase) 연결에 실패했습니다. 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
+      // 로그인 상태가 아니면 등록을 진행하지 않음 (버튼은 잠겨있지만 이중 방어)
+      if (!isLoggedIn()) {
+        showStatus("error", "로그인이 필요합니다. 메인화면에서 먼저 로그인해주세요.");
+        updateLoginGate();
         return;
       }
 
@@ -779,7 +870,7 @@
 
       const { error } = await sb.from(TABLE_NAME).insert([payload]);
 
-      submitBtn.disabled = false;
+      submitBtn.disabled = !isLoggedIn() ? true : false;
       submitBtn.textContent = "▣ 등록";
 
       if (error) {
