@@ -504,68 +504,48 @@
   </div>
 </div>
 
-<!-- 상담 써머리 모달 (목업) -->
+<!-- 상담 써머리 모달 -->
 <div class="lookupOverlay" id="summaryOverlay">
   <div class="lookupModal summaryModal">
     <button class="lookupClose" type="button" onclick="closeSummaryModal()">✕</button>
-    <h3>상담 써머리 <span class="mockTag">MOCK</span></h3>
-    <p class="sub">아직 실제 데이터가 연결되지 않은 목업 화면입니다.</p>
+    <h3>상담 써머리</h3>
+    <p class="sub">같은 내담자(이름+연락처)의 전체 회기를 기준으로 자동 계산됩니다.</p>
 
     <div class="sumSection">
       <h5><span class="num">1</span>기본 상담정보</h5>
-      <div class="sumStats">
-        <div><small>내담자</small><strong style="font-size:13px;">김OO</strong></div>
-        <div><small>성별/나이</small><strong style="font-size:13px;">여 · 34세</strong></div>
-        <div><small>회기차수</small><strong style="font-size:13px;">5회기</strong></div>
-      </div>
+      <div class="sumStats" id="sum1Stats"><div><small>-</small><strong>-</strong></div></div>
     </div>
 
     <div class="sumSection">
       <h5><span class="num">2</span>최근 회기 핵심 (원문 발췌)</h5>
-      <p class="quote">"...최근 들어 출근 전 불안감이 심해졌고, 이전보다 대인관계에서 위축되는 느낌을 자주 받는다고 함..."</p>
-      <p style="margin-top:6px;color:#94a3b8;">※ AI 요약이 아닌 5회기 상담기록 원문 발췌입니다.</p>
+      <p class="quote" id="sum2Quote">-</p>
+      <p style="margin-top:6px;color:#94a3b8;" id="sum2Note">※ AI 요약이 아닌 최신 회기 상담기록 원문 발췌입니다.</p>
     </div>
 
     <div class="sumSection">
       <h5><span class="num">3</span>반복된 주요 주제 (전체 회기 빈도)</h5>
-      <div class="sumChips">
-        <span class="sumChip">불안 · 3회</span>
-        <span class="sumChip">대인관계 · 2회</span>
-        <span class="sumChip">진로 · 1회</span>
-      </div>
+      <div class="sumChips" id="sum3Chips"></div>
     </div>
 
     <div class="sumSection">
       <h5><span class="num">4</span>변화의 흐름 (회기별 주제 타임라인)</h5>
-      <div class="sumTimeline">
-        <div class="tstep"><div class="dot"></div>1회기<b>진로</b></div>
-        <div class="tstep"><div class="dot"></div>2회기<b>진로·대인</b></div>
-        <div class="tstep"><div class="dot"></div>3회기<b>대인관계</b></div>
-        <div class="tstep"><div class="dot"></div>4회기<b>불안</b></div>
-        <div class="tstep"><div class="dot"></div>5회기<b>불안·대인</b></div>
-      </div>
+      <div class="sumTimeline" id="sum4Timeline"></div>
       <p style="margin-top:6px;color:#94a3b8;">※ 호전/악화 판단이 아닌, 회기별 기록된 주제코드 나열입니다.</p>
     </div>
 
     <div class="sumSection">
       <h5><span class="num">5</span>현재 상담 위치 (구조적 수치)</h5>
-      <div class="sumStats">
-        <div><small>진행 회기</small><strong>5회기</strong></div>
-        <div><small>최초상담 경과</small><strong>62일</strong></div>
-        <div><small>최근회기 경과</small><strong>14일</strong></div>
-      </div>
+      <div class="sumStats" id="sum5Stats"><div><small>-</small><strong>-</strong></div></div>
     </div>
 
     <div class="sumSection">
       <h5><span class="num">6</span>이번 회기 확인 포인트</h5>
-      <div class="sumCheck"><span>상담목표 언급</span><span class="found">✅ 발견</span></div>
-      <div class="sumCheck"><span>과제 부여 여부</span><span class="missing">– 미기재</span></div>
-      <div class="sumCheck"><span>다음 회기 계획</span><span class="found">✅ 발견</span></div>
+      <div id="sum6Checks"></div>
     </div>
 
     <div class="sumSection">
       <h5><span class="num">7</span>이전 과제 및 미완료 내용</h5>
-      <p>4회기에 기록된 과제 <b>"주 3회 감정일기 작성"</b>이(가) 5회기 상담기록에 다시 언급되었는지: <span class="missing">– 미확인(기록 없음)</span></p>
+      <div id="sum7Content"><p>-</p></div>
     </div>
 
     <div class="sumSection">
@@ -575,13 +555,7 @@
 
     <div class="sumSection">
       <h5><span class="num">9</span>근거 회기</h5>
-      <div class="sumChips">
-        <span class="sumChip">1회기</span>
-        <span class="sumChip">2회기</span>
-        <span class="sumChip">3회기</span>
-        <span class="sumChip">4회기</span>
-        <span class="sumChip">5회기</span>
-      </div>
+      <div class="sumChips" id="sum9Chips"></div>
     </div>
   </div>
 </div>
@@ -1049,11 +1023,178 @@
     window.location.href = 'index.html';
   });
 
-  // ===== 11-1) 상담 써머리 모달 (목업) =====
+  // ===== 11-1) 상담 써머리 (규칙 기반 자동 계산) =====
   const summaryOverlay = document.getElementById("summaryOverlay");
-  document.getElementById("summaryBtn").addEventListener("click", () => {
+
+  const GOAL_KEYWORDS = ['목표', '목적', '지향'];
+  const TASK_KEYWORDS = ['과제', '숙제', '다음까지', '해보기로', '실천하기로', '연습하기로'];
+  const NEXT_PLAN_KEYWORDS = ['다음 회기', '차기 회기', '다음 상담', '다음 시간'];
+
+  function containsAny(text, keywords){
+    if (!text) return false;
+    return keywords.some(k => text.includes(k));
+  }
+
+  function extractSentenceWithKeyword(text, keywords){
+    if (!text) return '';
+    const sentences = text.split(/(?<=[.!?])\s+|\n+/);
+    for (const s of sentences) {
+      if (keywords.some(k => s.includes(k))) return s.trim();
+    }
+    return '';
+  }
+
+  function kstDateOnly(iso){
+    if (!iso) return null;
+    const parts = isoToKSTParts(iso);
+    return parts.date ? new Date(parts.date + 'T00:00:00Z') : null;
+  }
+
+  function kstDayDiffFromToday(iso){
+    const d1 = kstDateOnly(iso);
+    if (!d1) return null;
+    const d2 = kstDateOnly(new Date().toISOString());
+    return Math.round((d2 - d1) / 86400000);
+  }
+
+  let topicNameMap = null;
+  async function loadTopicNameMap(){
+    if (topicNameMap) return topicNameMap;
+    topicNameMap = {};
+    const { data, error } = await sb.from('counsel_topic').select('code, name');
+    if (!error && data) data.forEach(r => { topicNameMap[r.code] = r.name; });
+    return topicNameMap;
+  }
+
+  function checkLineHtml(label, found){
+    return `<div class="sumCheck"><span>${label}</span><span class="${found ? 'found' : 'missing'}">${found ? '✅ 발견' : '– 미기재'}</span></div>`;
+  }
+
+  function escapeHtml(s){
+    return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  async function buildSummary(){
+    const clientName = document.getElementById('clientName').value.trim();
+    const clientPhone = clientPhoneEl.value.trim();
+    const currentSessionNo = document.getElementById('sessionNo').value ? parseInt(document.getElementById('sessionNo').value, 10) : null;
+    const currentDetailText = counselDetail.value || '';
+
+    // 로딩 상태 표시
+    document.getElementById('sum1Stats').innerHTML = `<div><small>불러오는 중...</small><strong>-</strong></div>`;
+    document.getElementById('sum2Quote').textContent = '불러오는 중...';
+    document.getElementById('sum3Chips').innerHTML = '';
+    document.getElementById('sum4Timeline').innerHTML = '';
+    document.getElementById('sum5Stats').innerHTML = `<div><small>불러오는 중...</small><strong>-</strong></div>`;
+    document.getElementById('sum6Checks').innerHTML = '';
+    document.getElementById('sum7Content').innerHTML = '<p>-</p>';
+    document.getElementById('sum9Chips').innerHTML = '';
+
+    if (!sb || !clientName || !clientPhone) {
+      document.getElementById('sum2Quote').textContent = '내담자 정보가 부족해 계산할 수 없습니다.';
+      return;
+    }
+
+    await loadTopicNameMap();
+
+    const { data, error } = await sb
+      .from(TABLE_NAME)
+      .select('id, Counseling_session, counsel_topic, Details_of_consultation, Consultation_start_time, appointment_at')
+      .eq('client_name', clientName)
+      .eq('client_phone', clientPhone);
+
+    if (error) {
+      console.error('상담 써머리 조회 실패:', error);
+      document.getElementById('sum2Quote').textContent = '데이터를 불러오지 못했습니다.';
+      return;
+    }
+
+    const sorted = (data || []).slice().sort((a, b) => (a.Counseling_session || 0) - (b.Counseling_session || 0));
+
+    // ① 기본 상담정보
+    const genderLabel = (document.getElementById('gender').selectedOptions[0] && document.getElementById('gender').selectedOptions[0].value)
+      ? document.getElementById('gender').selectedOptions[0].text : '-';
+    document.getElementById('sum1Stats').innerHTML = `
+      <div><small>내담자</small><strong style="font-size:13px;">${escapeHtml(clientName)}</strong></div>
+      <div><small>성별/나이</small><strong style="font-size:13px;">${genderLabel} · ${ageInput.value || '-'}</strong></div>
+      <div><small>회기차수</small><strong style="font-size:13px;">${currentSessionNo ? currentSessionNo + '회기' : '-'}</strong></div>
+    `;
+
+    // ② 최근 회기 핵심 (원문 발췌)
+    const latest = sorted[sorted.length - 1];
+    if (latest) {
+      const latestText = (latest.Details_of_consultation || '').trim();
+      const excerpt = latestText ? (latestText.length > 140 ? latestText.slice(0, 140) + '…' : latestText) : '작성된 상담내용이 없습니다.';
+      document.getElementById('sum2Quote').textContent = latestText ? `"${excerpt}"` : excerpt;
+      document.getElementById('sum2Note').textContent = `※ AI 요약이 아닌 ${latest.Counseling_session ? latest.Counseling_session + '회기' : '최신'} 상담기록 원문 발췌입니다.`;
+    } else {
+      document.getElementById('sum2Quote').textContent = '조회된 회기 기록이 없습니다.';
+    }
+
+    // ③ 반복된 주요 주제 (전체 회기 빈도)
+    const freq = {};
+    sorted.forEach(r => { if (r.counsel_topic) freq[r.counsel_topic] = (freq[r.counsel_topic] || 0) + 1; });
+    const freqEntries = Object.entries(freq).sort((a, b) => b[1] - a[1]);
+    document.getElementById('sum3Chips').innerHTML = freqEntries.length
+      ? freqEntries.map(([code, count]) => `<span class="sumChip">${escapeHtml(topicNameMap[code] || code)} · ${count}회</span>`).join('')
+      : `<span style="color:#94a3b8;font-size:12px;">기록된 주제가 없습니다.</span>`;
+
+    // ④ 변화의 흐름 (회기별 주제 타임라인)
+    document.getElementById('sum4Timeline').innerHTML = sorted.length
+      ? sorted.map(r => {
+          const label = r.Counseling_session ? `${r.Counseling_session}회기` : '회기미지정';
+          const topic = r.counsel_topic ? escapeHtml(topicNameMap[r.counsel_topic] || r.counsel_topic) : '-';
+          return `<div class="tstep"><div class="dot"></div>${label}<b>${topic}</b></div>`;
+        }).join('')
+      : `<span style="color:#94a3b8;font-size:12px;">데이터가 없습니다.</span>`;
+
+    // ⑤ 현재 상담 위치 (구조적 수치)
+    const firstIso = sorted[0] ? (sorted[0].Consultation_start_time || sorted[0].appointment_at) : null;
+    const latestIso = latest ? (latest.Consultation_start_time || latest.appointment_at) : null;
+    const firstDiff = kstDayDiffFromToday(firstIso);
+    const latestDiff = kstDayDiffFromToday(latestIso);
+    document.getElementById('sum5Stats').innerHTML = `
+      <div><small>진행 회기</small><strong>${sorted.length}회기</strong></div>
+      <div><small>최초상담 경과</small><strong>${firstDiff === null ? '-' : firstDiff + '일'}</strong></div>
+      <div><small>최근회기 경과</small><strong>${latestDiff === null ? '-' : latestDiff + '일'}</strong></div>
+    `;
+
+    // ⑥ 이번 회기 확인 포인트 (현재 조회된 회기 기준)
+    document.getElementById('sum6Checks').innerHTML =
+      checkLineHtml('상담목표 언급', containsAny(currentDetailText, GOAL_KEYWORDS)) +
+      checkLineHtml('과제 부여 여부', containsAny(currentDetailText, TASK_KEYWORDS)) +
+      checkLineHtml('다음 회기 계획', containsAny(currentDetailText, NEXT_PLAN_KEYWORDS));
+
+    // ⑦ 이전 과제 및 미완료 내용
+    let sum7Html;
+    if (!currentSessionNo || currentSessionNo <= 1) {
+      sum7Html = `<p style="color:#94a3b8;">이전 회기 없음</p>`;
+    } else {
+      const prevRecord = sorted.find(r => r.Counseling_session === currentSessionNo - 1);
+      if (!prevRecord) {
+        sum7Html = `<p style="color:#94a3b8;">이전 회기 없음</p>`;
+      } else {
+        const taskSentence = extractSentenceWithKeyword(prevRecord.Details_of_consultation || '', TASK_KEYWORDS);
+        if (!taskSentence) {
+          sum7Html = `<p>이전 회기(${currentSessionNo - 1}회기)에 기록된 과제 언급이 없습니다.</p>`;
+        } else {
+          const foundAgain = containsAny(currentDetailText, TASK_KEYWORDS);
+          sum7Html = `<p>${currentSessionNo - 1}회기에 기록된 과제: <b>"${escapeHtml(taskSentence)}"</b>이(가) 이번 회기 기록에 다시 언급되었는지: <span class="${foundAgain ? 'found' : 'missing'}">${foundAgain ? '✅ 발견' : '– 미확인(기록 없음)'}</span></p>`;
+        }
+      }
+    }
+    document.getElementById('sum7Content').innerHTML = sum7Html;
+
+    // ⑨ 근거 회기
+    document.getElementById('sum9Chips').innerHTML = sorted.length
+      ? sorted.map(r => `<span class="sumChip">${r.Counseling_session ? r.Counseling_session + '회기' : '미지정'}</span>`).join('')
+      : `<span style="color:#94a3b8;font-size:12px;">-</span>`;
+  }
+
+  document.getElementById("summaryBtn").addEventListener("click", async () => {
     if (!currentRecordId) { alert("먼저 내담자를 조회해주세요."); return; }
     summaryOverlay.classList.add("open");
+    await buildSummary();
   });
   function closeSummaryModal(){ summaryOverlay.classList.remove("open"); }
   summaryOverlay.addEventListener("click", (e) => { if (e.target === summaryOverlay) closeSummaryModal(); });
