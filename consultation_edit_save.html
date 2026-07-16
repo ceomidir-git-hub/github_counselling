@@ -156,17 +156,19 @@
   }
   .actions {
     display: flex;
-    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: clamp(6px, 1.2vw, 10px);
     margin-top: 24px;
   }
   .btn {
-    flex: 1;
-    height: 46px;
+    flex: 0 1 clamp(90px, 20vw, 150px);
+    height: 44px;
     border-radius: 6px;
     border: 1px solid #d1d5db;
     background: #ffffff;
     color: #374151;
-    font-size: 13px;
+    font-size: clamp(12px, 1.6vw, 13px);
     font-weight: 700;
     cursor: pointer;
     display: flex;
@@ -174,6 +176,7 @@
     justify-content: center;
     gap: 6px;
     font-family: inherit;
+    padding: 0 10px;
   }
   .btn:hover { background: #f9fafb; }
   .btn:disabled { opacity:.6; cursor:not-allowed; }
@@ -183,6 +186,12 @@
     color: #ffffff;
   }
   .btn.primary:hover { background: #1747b8; }
+  .btn.summary {
+    background: #eef2ff;
+    border-color: #c7d2fe;
+    color: #3730a3;
+  }
+  .btn.summary:hover { background: #e0e7ff; }
   .statusMsg{
     display:none;
     border-radius:8px;
@@ -232,6 +241,91 @@
   .lookupRow.clickable:hover{ background:#f8fafc; }
   .lookupEmpty{ font-size:14px; color:#6b7280; padding:14px 0; text-align:center; }
 
+  /* ===== 상담 써머리 모달 (조회 팝업과 동일 패턴, 파란 톤 통일) ===== */
+  .summaryModal{
+    max-width:560px;
+  }
+  .summaryModal .mockTag{
+    display:inline-block;
+    background:#7c3aed;
+    color:#fff;
+    font-size:10px;
+    font-weight:800;
+    padding:2px 8px;
+    border-radius:999px;
+    margin-left:6px;
+    vertical-align:middle;
+  }
+  .sumSection{
+    background:#f8fafc;
+    border:1px solid #eef1f6;
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:8px;
+  }
+  .sumSection:last-child{ margin-bottom:0; }
+  .sumSection h5{
+    margin:0 0 6px;
+    font-size:12.5px;
+    font-weight:800;
+    color:#1a56db;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .sumSection h5 .num{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:17px;
+    height:17px;
+    border-radius:50%;
+    background:#1a56db;
+    color:#fff;
+    font-size:10px;
+    font-weight:800;
+  }
+  .sumSection p{
+    margin:0;
+    font-size:12.5px;
+    color:#475569;
+    line-height:1.55;
+  }
+  .sumSection .quote{
+    font-size:12.5px;
+    color:#334155;
+    line-height:1.6;
+    background:#fff;
+    border-left:3px solid #93c5fd;
+    padding:6px 9px;
+    border-radius:6px;
+  }
+  .sumChips{ display:flex; gap:5px; flex-wrap:wrap; }
+  .sumChip{
+    font-size:11px; font-weight:700;
+    padding:4px 8px; border-radius:999px;
+    background:#eef2ff; color:#3730a3;
+  }
+  .sumTimeline{ display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; }
+  .sumTimeline .tstep{ flex:0 0 auto; text-align:center; font-size:10px; color:#64748b; }
+  .sumTimeline .tstep .dot{ width:9px; height:9px; border-radius:50%; background:#1a56db; margin:0 auto 4px; }
+  .sumTimeline .tstep b{ display:block; font-size:10px; color:#334155; margin-top:2px; white-space:nowrap; }
+  .sumCheck{
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:12.5px; padding:5px 0; border-bottom:1px dashed #e2e8f0;
+  }
+  .sumCheck:last-child{ border-bottom:0; }
+  .sumCheck .found{ color:#16a34a; font-weight:800; }
+  .sumCheck .missing{ color:#94a3b8; font-weight:700; }
+  .sumStats{ display:flex; gap:8px; }
+  .sumStats div{ flex:1; background:#fff; border:1px solid #eef1f6; border-radius:8px; text-align:center; padding:8px 4px; }
+  .sumStats small{ display:block; font-size:10px; color:#64748b; font-weight:700; }
+  .sumStats strong{ font-size:14px; color:#1a56db; }
+  .sumPending{
+    font-size:11px; color:#b45309; background:#fffbeb;
+    border:1px dashed #fcd34d; border-radius:8px; padding:7px 9px; line-height:1.5;
+  }
+
   @media (max-width: 1024px) {
     .grid,
     .grid.cols-3,
@@ -241,7 +335,6 @@
       grid-template-columns: 1fr;
     }
     .container { padding: 22px 20px 28px; }
-    .actions { flex-wrap: wrap; }
   }
 </style>
 </head>
@@ -392,6 +485,7 @@
     <div class="actions">
       <button type="button" class="btn primary" id="saveBtn"><i class="ti ti-device-floppy" aria-hidden="true"></i>수정/저장</button>
       <button type="reset" class="btn" id="resetBtn"><i class="ti ti-refresh" aria-hidden="true"></i>초기화</button>
+      <button type="button" class="btn summary" id="summaryBtn"><i class="ti ti-report-analytics" aria-hidden="true"></i>요약</button>
       <button type="button" class="btn" id="homeBtn"><i class="ti ti-home" aria-hidden="true"></i>메인화면</button>
     </div>
 
@@ -406,6 +500,88 @@
     <p class="sub" id="lookupSub">내담자명을 입력한 뒤 조회해주세요.</p>
     <div id="lookupResultBox">
       <div class="lookupEmpty">내담자명을 입력한 뒤 조회해주세요.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 상담 써머리 모달 (목업) -->
+<div class="lookupOverlay" id="summaryOverlay">
+  <div class="lookupModal summaryModal">
+    <button class="lookupClose" type="button" onclick="closeSummaryModal()">✕</button>
+    <h3>상담 써머리 <span class="mockTag">MOCK</span></h3>
+    <p class="sub">아직 실제 데이터가 연결되지 않은 목업 화면입니다.</p>
+
+    <div class="sumSection">
+      <h5><span class="num">1</span>기본 상담정보</h5>
+      <div class="sumStats">
+        <div><small>내담자</small><strong style="font-size:13px;">김OO</strong></div>
+        <div><small>성별/나이</small><strong style="font-size:13px;">여 · 34세</strong></div>
+        <div><small>회기차수</small><strong style="font-size:13px;">5회기</strong></div>
+      </div>
+    </div>
+
+    <div class="sumSection">
+      <h5><span class="num">2</span>최근 회기 핵심 (원문 발췌)</h5>
+      <p class="quote">"...최근 들어 출근 전 불안감이 심해졌고, 이전보다 대인관계에서 위축되는 느낌을 자주 받는다고 함..."</p>
+      <p style="margin-top:6px;color:#94a3b8;">※ AI 요약이 아닌 5회기 상담기록 원문 발췌입니다.</p>
+    </div>
+
+    <div class="sumSection">
+      <h5><span class="num">3</span>반복된 주요 주제 (전체 회기 빈도)</h5>
+      <div class="sumChips">
+        <span class="sumChip">불안 · 3회</span>
+        <span class="sumChip">대인관계 · 2회</span>
+        <span class="sumChip">진로 · 1회</span>
+      </div>
+    </div>
+
+    <div class="sumSection">
+      <h5><span class="num">4</span>변화의 흐름 (회기별 주제 타임라인)</h5>
+      <div class="sumTimeline">
+        <div class="tstep"><div class="dot"></div>1회기<b>진로</b></div>
+        <div class="tstep"><div class="dot"></div>2회기<b>진로·대인</b></div>
+        <div class="tstep"><div class="dot"></div>3회기<b>대인관계</b></div>
+        <div class="tstep"><div class="dot"></div>4회기<b>불안</b></div>
+        <div class="tstep"><div class="dot"></div>5회기<b>불안·대인</b></div>
+      </div>
+      <p style="margin-top:6px;color:#94a3b8;">※ 호전/악화 판단이 아닌, 회기별 기록된 주제코드 나열입니다.</p>
+    </div>
+
+    <div class="sumSection">
+      <h5><span class="num">5</span>현재 상담 위치 (구조적 수치)</h5>
+      <div class="sumStats">
+        <div><small>진행 회기</small><strong>5회기</strong></div>
+        <div><small>최초상담 경과</small><strong>62일</strong></div>
+        <div><small>최근회기 경과</small><strong>14일</strong></div>
+      </div>
+    </div>
+
+    <div class="sumSection">
+      <h5><span class="num">6</span>이번 회기 확인 포인트</h5>
+      <div class="sumCheck"><span>상담목표 언급</span><span class="found">✅ 발견</span></div>
+      <div class="sumCheck"><span>과제 부여 여부</span><span class="missing">– 미기재</span></div>
+      <div class="sumCheck"><span>다음 회기 계획</span><span class="found">✅ 발견</span></div>
+    </div>
+
+    <div class="sumSection">
+      <h5><span class="num">7</span>이전 과제 및 미완료 내용</h5>
+      <p>4회기에 기록된 과제 <b>"주 3회 감정일기 작성"</b>이(가) 5회기 상담기록에 다시 언급되었는지: <span class="missing">– 미확인(기록 없음)</span></p>
+    </div>
+
+    <div class="sumSection">
+      <h5><span class="num">8</span>상담목표 진행 흐름</h5>
+      <p class="sumPending">⚠ 상담목표를 저장하는 구조화된 필드가 아직 없어 이 항목은 표시할 수 없습니다. (별도 필드 설계 필요)</p>
+    </div>
+
+    <div class="sumSection">
+      <h5><span class="num">9</span>근거 회기</h5>
+      <div class="sumChips">
+        <span class="sumChip">1회기</span>
+        <span class="sumChip">2회기</span>
+        <span class="sumChip">3회기</span>
+        <span class="sumChip">4회기</span>
+        <span class="sumChip">5회기</span>
+      </div>
     </div>
   </div>
 </div>
@@ -872,6 +1048,15 @@
   document.getElementById('homeBtn').addEventListener('click', () => {
     window.location.href = 'index.html';
   });
+
+  // ===== 11-1) 상담 써머리 모달 (목업) =====
+  const summaryOverlay = document.getElementById("summaryOverlay");
+  document.getElementById("summaryBtn").addEventListener("click", () => {
+    if (!currentRecordId) { alert("먼저 내담자를 조회해주세요."); return; }
+    summaryOverlay.classList.add("open");
+  });
+  function closeSummaryModal(){ summaryOverlay.classList.remove("open"); }
+  summaryOverlay.addEventListener("click", (e) => { if (e.target === summaryOverlay) closeSummaryModal(); });
 
   // ===== 12) 초기화(페이지 로드) =====
   (async function initPage(){
