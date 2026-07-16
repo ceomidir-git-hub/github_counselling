@@ -103,6 +103,12 @@ button,input,select,textarea{
     place-items:center;
     font-size:24px}
 
+.shield img{
+    width:32px;
+    height:32px;
+    object-fit:contain;
+    display:block}
+
 .brand h1{
     margin:0;
     font-size:18px}
@@ -117,13 +123,13 @@ button,input,select,textarea{
     flex:0 0 auto;
     display:flex;
     align-items:center;
-    gap:6px;
+    gap:4px;
     background:rgba(255,255,255,.16);
     border:1px solid rgba(255,255,255,.55);
     color:#fff;
-    font-size:14px;
+    font-size:10px;
     font-weight:900;
-    padding:8px 13px;
+    padding:6px 9px;
     border-radius:999px;
     cursor:pointer;
     white-space:nowrap;
@@ -131,7 +137,7 @@ button,input,select,textarea{
     transition:background .15s ease}
 
 #loginIcon{
-    font-size:18px;
+    font-size:13px;
     line-height:1}
 
 .loginBtn:active{
@@ -203,24 +209,6 @@ button,input,select,textarea{
 .quick.locked{
     opacity:.55}
 
-.lockBadge{
-    position:absolute;
-    top:7px;
-    right:7px;
-    width:19px;
-    height:19px;
-    border-radius:50%;
-    background:#111827;
-    color:#fff;
-    font-size:10px;
-    display:none;
-    align-items:center;
-    justify-content:center}
-
-.quick.locked .lockBadge,
-.tab.locked .lockBadge{
-    display:flex}
-
 .quick .ico{
     font-size:27px}
 
@@ -285,15 +273,6 @@ button,input,select,textarea{
 
 .noteCard.locked{
     opacity:.6}
-
-.noteCard .lockBadge{
-    display:none;
-    position:absolute;
-    top:10px;
-    right:10px}
-
-.noteCard.locked .lockBadge{
-    display:flex}
 
 .noteNav{
     display:flex;
@@ -928,7 +907,7 @@ button,input,select,textarea{
       <div class="brand">
        <div class="brandLeft">
         <div class="shield">
-         💬
+         <img src="data:image/png;base64,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" alt="상담도우미 아이콘"/>
         </div>
         <div>
          <h1>
@@ -949,7 +928,7 @@ button,input,select,textarea{
         아래 iframe이 message.html을 불러옵니다.
         message.html의 문구를 수정하면 이 화면에 자동으로 반영됩니다.
        -->
-       <iframe src="message.html" title="메시지" scrolling="no"
+       <iframe src="message.html" title="메시지" scrolling="no" allow="geolocation"
         style="width:100%;height:29px;border:0;display:block;background:transparent;">
        </iframe>
       </div>
@@ -959,11 +938,10 @@ button,input,select,textarea{
          🔎
         </div>
         <b>
-         예약등록
+         접수등록
         </b>
        </a>
        <a class="quick" href="Consultation_registration.html" data-requires-login="true">
-        <span class="lockBadge">🔒</span>
         <div class="ico">
          ✨
         </div>
@@ -972,7 +950,6 @@ button,input,select,textarea{
         </b>
        </a>
        <a class="quick" href="consultation_edit_save.html" data-requires-login="true">
-        <span class="lockBadge">🔒</span>
         <div class="ico">
          📋
         </div>
@@ -981,7 +958,6 @@ button,input,select,textarea{
         </b>
        </a>
        <a class="quick" href="dashboard.html" data-requires-login="true">
-        <span class="lockBadge">🔒</span>
         <div class="ico">
          📊
         </div>
@@ -990,7 +966,6 @@ button,input,select,textarea{
         </b>
        </a>
        <a class="quick" href="consult_list.html" data-requires-login="true">
-        <span class="lockBadge">🔒</span>
         <div class="ico">
          👤
         </div>
@@ -999,7 +974,6 @@ button,input,select,textarea{
         </b>
        </a>
        <a class="quick" href="schedule.html" data-requires-login="true">
-        <span class="lockBadge">🔒</span>
         <div class="ico">
          🗓️
         </div>
@@ -1044,7 +1018,6 @@ button,input,select,textarea{
        📝 상담자 노트
       </div>
       <div class="noteCard" id="noteCard">
-       <span class="lockBadge">🔒</span>
        <div class="noteNav">
         <button type="button" class="noteNavBtn" id="notePrevBtn" onclick="noteChangeDay(-1)">◀ 이전</button>
         <span class="noteDateWrap">
@@ -1074,11 +1047,10 @@ button,input,select,textarea{
       <a class="tab" href="consult_receipt_register.html">
        🔎
        <span>
-        예약등록
+        접수등록
        </span>
       </a>
       <a class="tab" href="Consultation_registration.html" data-requires-login="true">
-       <span class="lockBadge">🔒</span>
        <div class="plus">
         +
        </div>
@@ -1087,14 +1059,12 @@ button,input,select,textarea{
        </span>
       </a>
       <a class="tab" href="consultation_edit_save.html" data-requires-login="true">
-       <span class="lockBadge">🔒</span>
        📊
        <span>
         조회/저장
        </span>
       </a>
       <a class="tab" href="schedule.html" data-requires-login="true">
-       <span class="lockBadge">🔒</span>
        🗓️
        <span>
         스케줄
@@ -1234,7 +1204,7 @@ button,input,select,textarea{
       updateSummaryCard();
     }
 
-    // ===== 메뉴 잠금 처리: 예약등록을 제외한 모든 메뉴는 로그인 전 잠금 =====
+    // ===== 메뉴 잠금 처리: 접수등록을 제외한 모든 메뉴는 로그인 전 잠금 =====
     function updateMenuLockState(){
       document.querySelectorAll('[data-requires-login]').forEach((el) => {
         if (isLoggedIn()) {
