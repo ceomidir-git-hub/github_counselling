@@ -121,8 +121,10 @@
       align-items: center;
     }
 
-    .form-row.split-2 {
-      grid-template-columns: 96px 1fr 1fr;
+    .datetime-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
     }
 
     label {
@@ -146,6 +148,7 @@
       height: var(--field-height);
       padding: 0 12px;
       font-size: 14px;
+      min-width: 0;
     }
 
     .field[readonly] {
@@ -160,7 +163,7 @@
       background-position: calc(100% - 18px) 19px, calc(100% - 13px) 19px;
       background-size: 5px 5px, 5px 5px;
       background-repeat: no-repeat;
-      padding-right: 36px;
+      padding-right: 28px;
     }
 
     textarea {
@@ -185,17 +188,18 @@
       margin-top: -4px;
     }
 
-    .preview-line {
-      grid-column: 2 / -1;
-      font-size: 13px;
+    .preview-badge {
+      display: inline-block;
+      font-size: 12px;
       font-weight: 850;
       color: var(--blue);
       background: #eef4ff;
       border: 1px solid #d7e6ff;
       border-radius: 8px;
-      padding: 8px 10px;
-      margin-top: 2px;
+      padding: 5px 10px;
     }
+
+    .preview-row { margin-top: -2px; }
 
     .textarea-wrap { position: relative; }
 
@@ -273,40 +277,6 @@
       color: var(--red);
     }
 
-    /* 로그인 필요 안내 배너 */
-    .loginNotice {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      background: #fff7ed;
-      border: 1px solid #fed7aa;
-      color: #9a3412;
-      border-radius: 14px;
-      padding: 12px 14px;
-      font-size: 13px;
-      font-weight: 850;
-      margin-bottom: 14px;
-    }
-
-    .loginNotice.show { display: flex; }
-
-    .loginNotice .msg { flex: 1; line-height: 1.5; }
-
-    .loginNotice .loginNowBtn {
-      flex: 0 0 auto;
-      height: 36px;
-      padding: 0 12px;
-      border-radius: 9px;
-      border: 0;
-      background: #0b63e5;
-      color: #fff;
-      font-weight: 900;
-      font-size: 12px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
     .field.invalid, select.invalid {
       border-color: var(--red);
       box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.10);
@@ -320,7 +290,6 @@
       .page-title { font-size: 28px; margin-bottom: 16px; }
       .section { padding: 15px 12px; border-radius: 15px; }
       .form-row { grid-template-columns: 100px 1fr; gap: 8px; }
-      .form-row.split-2 { grid-template-columns: 100px 1fr 1fr; }
       label { font-size: 13px; }
       .field, select { height: 44px; font-size: 13px; }
       textarea { min-height: 108px; font-size: 13px; }
@@ -330,10 +299,9 @@
 
     @media (max-width: 360px) {
       .form-row { grid-template-columns: 1fr; gap: 5px; }
-      .form-row.split-2 { grid-template-columns: 1fr 1fr; }
       .actions { grid-template-columns: repeat(2, 1fr); }
       .btn { font-size: 13px; }
-      .hint, .preview-line { grid-column: 1 / -1; }
+      .hint { grid-column: 1 / -1; }
     }
 
     @media (min-width: 700px) {
@@ -355,7 +323,6 @@
       .container { padding: 34px 42px 36px; }
       .section { padding: 20px 26px; }
       .form-row { grid-template-columns: var(--label-width) 1fr; }
-      .form-row.split-2 { grid-template-columns: var(--label-width) 1fr 1fr; }
     }
   </style>
 </head>
@@ -371,11 +338,6 @@
         <div class="container">
           <h1 class="page-title">접수 상담 등록</h1>
 
-          <div class="loginNotice" id="loginNotice">
-            <span class="msg">로그인이 필요한 화면입니다. 로그인 후 등록할 수 있습니다.</span>
-            <button type="button" class="loginNowBtn" onclick="location.href='index.html'">메인으로</button>
-          </div>
-
           <div class="statusMsg" id="statusMsg"></div>
 
           <form id="consultForm">
@@ -383,23 +345,33 @@
               <h2 class="section-title">1. 접수 정보</h2>
 
               <div class="form-grid">
-                <div class="form-row split-2">
+                <div class="form-row full">
                   <label for="receivedDate">접수일시</label>
-                  <input id="receivedDate" class="field" type="date" />
-                  <select id="receivedTime">
-                    <option value="" selected disabled>시간 선택</option>
-                  </select>
+                  <div class="datetime-controls">
+                    <input id="receivedDate" class="field" type="date" />
+                    <select id="receivedTime">
+                      <option value="" selected disabled>시간 선택</option>
+                    </select>
+                  </div>
                 </div>
-                <div class="preview-line" id="receivedPreview">접수일시를 선택하면 여기에 표시됩니다.</div>
+                <div class="form-row full preview-row">
+                  <span></span>
+                  <span class="preview-badge" id="receivedPreview">접수일시를 선택하면 표시됩니다.</span>
+                </div>
 
-                <div class="form-row split-2">
+                <div class="form-row full">
                   <label for="reservationDate">예약일</label>
-                  <input id="reservationDate" class="field" type="date" />
-                  <select id="reservationTime">
-                    <option value="" selected disabled>시간 선택</option>
-                  </select>
+                  <div class="datetime-controls">
+                    <input id="reservationDate" class="field" type="date" />
+                    <select id="reservationTime">
+                      <option value="" selected disabled>시간 선택</option>
+                    </select>
+                  </div>
                 </div>
-                <div class="preview-line" id="reservationPreview">예약일과 시간을 선택하면 여기에 표시됩니다.</div>
+                <div class="form-row full preview-row">
+                  <span></span>
+                  <span class="preview-badge" id="reservationPreview">예약일과 시간을 선택하면 표시됩니다.</span>
+                </div>
 
                 <div class="form-row">
                   <label for="receptionistName">접수자명</label>
@@ -412,7 +384,7 @@
                 </div>
 
                 <div class="form-row full">
-                  <label for="relationship">내담자와의 관계</label>
+                  <label for="relationship">내담자 관계</label>
                   <select id="relationship">
                     <option selected>본인</option>
                     <option>부모</option>
@@ -447,12 +419,14 @@
 
                 <div class="form-row">
                   <label for="birthDate">생년월일</label>
-                  <input id="birthDate" class="field" type="text" placeholder="0000.00.00" maxlength="10" inputmode="numeric" />
+                  <input id="birthDate" class="field" type="text" placeholder="0000-00-00" maxlength="10" inputmode="numeric" />
                 </div>
 
                 <div class="form-row">
                   <label for="job">직업</label>
-                  <input id="job" class="field" type="text" placeholder="직업을 입력하세요" />
+                  <select id="job">
+                    <option selected disabled value="">불러오는 중...</option>
+                  </select>
                 </div>
               </div>
             </section>
@@ -587,21 +561,21 @@
       return /^\d{3}-\d{3,4}-\d{4}$/.test(value);
     }
 
-    // 3) 생년월일 자동 마침표 포맷 (0000.00.00)
+    // 3) 생년월일 자동 하이픈 포맷 (0000-00-00)
     const birthDateEl = document.getElementById("birthDate");
     birthDateEl.addEventListener("input", () => {
       let digits = birthDateEl.value.replace(/\D/g, "").slice(0, 8);
       let formatted = digits;
       if (digits.length > 4 && digits.length <= 6) {
-        formatted = digits.slice(0, 4) + "." + digits.slice(4);
+        formatted = digits.slice(0, 4) + "-" + digits.slice(4);
       } else if (digits.length > 6) {
-        formatted = digits.slice(0, 4) + "." + digits.slice(4, 6) + "." + digits.slice(6);
+        formatted = digits.slice(0, 4) + "-" + digits.slice(4, 6) + "-" + digits.slice(6);
       }
       birthDateEl.value = formatted;
     });
 
     function isValidBirthDate(value) {
-      const m = value.match(/^(\d{4})\.(\d{2})\.(\d{2})$/);
+      const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
       if (!m) return false;
       const year = parseInt(m[1], 10);
       const month = parseInt(m[2], 10);
@@ -613,8 +587,8 @@
     }
 
     function birthDateToISO(value) {
-      // 0000.00.00 -> 0000-00-00
-      return value.replaceAll(".", "-");
+      // 이미 0000-00-00 형식이므로 그대로 사용
+      return value;
     }
 
     // 4) 예약일: 날짜 + 시간 선택 → 자동 표시 + ISO 변환
@@ -685,8 +659,7 @@
       else el.classList.remove("invalid");
     }
 
-    // ===== 6-1) 로그인 필요 안내 / 등록 버튼 잠금 처리 =====
-    const loginNoticeEl = document.getElementById("loginNotice");
+    // ===== 6-1) 등록 버튼 잠금 처리 (화면에는 안내를 표시하지 않는 조용한 안전장치) =====
     const submitBtn = document.getElementById("submitBtn");
     let currentSession = null;
 
@@ -695,13 +668,7 @@
     }
 
     function updateLoginGate() {
-      if (isLoggedIn()) {
-        loginNoticeEl.classList.remove("show");
-        submitBtn.disabled = false;
-      } else {
-        loginNoticeEl.classList.add("show");
-        submitBtn.disabled = true;
-      }
+      submitBtn.disabled = !isLoggedIn();
     }
 
     // ===== 7) Supabase 연결: 실패해도 위 UI 동작에는 영향 없도록 별도 처리 =====
@@ -754,6 +721,7 @@
     }
 
     loadLookupOptions("sex_codes", document.getElementById("gender"));
+    loadLookupOptions("job_codes", document.getElementById("job"));
     loadLookupOptions("counsel_client_type", document.getElementById("consultationTarget"));
     loadLookupOptions("counsel_topic", document.getElementById("consultationTopic"));
 
