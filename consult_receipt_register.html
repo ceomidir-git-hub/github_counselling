@@ -282,6 +282,91 @@
       box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.10);
     }
 
+    /* ===== 조회(4. 접수 상담 조회) 섹션 전용 스타일 ===== */
+    .lookup-btn-row {
+      grid-column: 1 / -1;
+    }
+
+    .lookup-item {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      background: #fff;
+    }
+
+    .lookup-item:hover, .lookup-item:active {
+      border-color: var(--blue);
+      background: #f7fbff;
+      box-shadow: 0 4px 12px rgba(11, 99, 229, 0.12);
+    }
+
+    .lookup-item-date {
+      font-weight: 850;
+      color: var(--blue-dark);
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .lookup-item-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .lookup-result-count {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      font-weight: 850;
+      color: var(--blue);
+      cursor: pointer;
+    }
+
+    .detail-grid { display: grid; gap: 0; }
+
+    .detail-row {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 8px;
+      font-size: 13px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .detail-row:last-child { border-bottom: none; }
+
+    .detail-row .k { font-weight: 850; color: #111827; }
+    .detail-row .v { color: #334155; word-break: break-word; }
+
+    .detail-label {
+      font-size: 12px;
+      font-weight: 850;
+      color: var(--muted);
+      margin: 14px 0 6px;
+    }
+
+    .detail-textarea {
+      white-space: pre-wrap;
+      font-size: 13px;
+      color: #334155;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      line-height: 1.5;
+    }
+
     @media (max-width: 480px) {
       .page { padding: 0; background: #fff; }
       .phone { width: 100%; min-height: 100vh; padding: 0; border-radius: 0; background: #fff; box-shadow: none; }
@@ -465,6 +550,32 @@
               <a href="index.html" class="btn">⌂ 메인화면</a>
             </div>
           </form>
+
+          <!-- ===== 4. 접수 상담 조회 (등록 폼과 별개, 내담자명+연락처 정확히 일치하는 기록 검색) ===== -->
+          <section class="section">
+            <h2 class="section-title">4. 접수 상담 조회</h2>
+
+            <div class="statusMsg" id="lookupMsg"></div>
+
+            <div class="form-grid">
+              <div class="form-row">
+                <label for="lookupName">내담자명</label>
+                <input id="lookupName" class="field" type="text" placeholder="내담자명을 입력하세요" />
+              </div>
+
+              <div class="form-row">
+                <label for="lookupPhone">연락처</label>
+                <input id="lookupPhone" class="field" type="tel" placeholder="010-0000-0000" maxlength="13" inputmode="numeric" />
+              </div>
+
+              <div class="form-row full lookup-btn-row">
+                <button type="button" class="btn primary" id="lookupBtn" style="width:100%;">🔍 조회</button>
+              </div>
+            </div>
+
+            <div id="lookupResultList" style="display:none; margin-top:14px;"></div>
+            <div id="lookupDetail" style="display:none; margin-top:14px;"></div>
+          </section>
         </div>
       </div>
     </main>
@@ -695,8 +806,14 @@
     }
     const TABLE_NAME = "db_sina_counsel";
 
-    // ===== 7-1) lookup 테이블(sex_codes, counsel_client_type, counsel_topic)에서 옵션 동적 로딩 =====
-    async function loadLookupOptions(tableName, selectEl) {
+    // ===== 7-1) lookup 테이블(sex_codes, counsel_client_type, counsel_topic, job_codes)에서 옵션 동적 로딩 =====
+    // mapObj를 전달하면 code -> name 매핑도 함께 저장 (조회 상세화면에서 코드값을 이름으로 표시하기 위함)
+    const sexMap = {};
+    const jobMap = {};
+    const targetMap = {};
+    const topicMap = {};
+
+    async function loadLookupOptions(tableName, selectEl, mapObj) {
       if (!sb) {
         selectEl.innerHTML = `<option selected disabled value="">목록을 불러올 수 없습니다</option>`;
         return;
@@ -716,14 +833,15 @@
       let html = `<option selected disabled value="">선택하세요</option>`;
       data.forEach((row) => {
         html += `<option value="${row.code}">${row.name}</option>`;
+        if (mapObj) mapObj[row.code] = row.name;
       });
       selectEl.innerHTML = html;
     }
 
-    loadLookupOptions("sex_codes", document.getElementById("gender"));
-    loadLookupOptions("job_codes", document.getElementById("job"));
-    loadLookupOptions("counsel_client_type", document.getElementById("consultationTarget"));
-    loadLookupOptions("counsel_topic", document.getElementById("consultationTopic"));
+    loadLookupOptions("sex_codes", document.getElementById("gender"), sexMap);
+    loadLookupOptions("job_codes", document.getElementById("job"), jobMap);
+    loadLookupOptions("counsel_client_type", document.getElementById("consultationTarget"), targetMap);
+    loadLookupOptions("counsel_topic", document.getElementById("consultationTopic"), topicMap);
 
     // ===== 7-2) 로그인 상태 초기화 및 실시간 반영 =====
     async function initAuth() {
@@ -853,6 +971,178 @@
       reservationPreviewEl.textContent = "예약일과 시간을 선택하면 여기에 표시됩니다.";
       setReceivedDefaultToNow();
     });
+
+    // ===== 9) 접수 상담 조회 (내담자명 + 연락처 정확히 일치하는 기록 검색) =====
+    const lookupNameEl = document.getElementById("lookupName");
+    const lookupPhoneEl = document.getElementById("lookupPhone");
+    const lookupBtn = document.getElementById("lookupBtn");
+    const lookupMsgEl = document.getElementById("lookupMsg");
+    const lookupResultListEl = document.getElementById("lookupResultList");
+    const lookupDetailEl = document.getElementById("lookupDetail");
+
+    attachPhoneFormatter(lookupPhoneEl);
+    lookupNameEl.addEventListener("input", () => markInvalid(lookupNameEl, false));
+    lookupPhoneEl.addEventListener("input", () => markInvalid(lookupPhoneEl, false));
+
+    function showLookupMsg(type, message) {
+      lookupMsgEl.className = "statusMsg show " + type;
+      lookupMsgEl.textContent = message;
+    }
+    function hideLookupMsg() {
+      lookupMsgEl.className = "statusMsg";
+      lookupMsgEl.textContent = "";
+    }
+
+    function escapeHTML(str) {
+      if (str === null || str === undefined || str === "") return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function formatKST(iso) {
+      if (!iso) return "-";
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return "-";
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Seoul",
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hour12: false
+      }).formatToParts(d);
+      const map = {};
+      parts.forEach(p => map[p.type] = p.value);
+      const dateStr = `${map.year}-${map.month}-${map.day}`;
+      const dObj = new Date(dateStr + "T00:00:00");
+      const dayLabel = DAY_KR[dObj.getDay()];
+      const hour = parseInt(map.hour, 10);
+      const ampm = hour < 12 ? "오전" : "오후";
+      return `${dateStr}(${dayLabel}) ${map.hour}:${map.minute}(${ampm})`;
+    }
+
+    lookupBtn.addEventListener("click", async () => {
+      hideLookupMsg();
+      lookupResultListEl.style.display = "none";
+      lookupResultListEl.innerHTML = "";
+      lookupDetailEl.style.display = "none";
+      lookupDetailEl.innerHTML = "";
+
+      if (!sb) {
+        showLookupMsg("error", "조회 서버(Supabase) 연결에 실패했습니다. 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
+      if (!isLoggedIn()) {
+        showLookupMsg("error", "로그인이 필요합니다. 메인화면에서 먼저 로그인해주세요.");
+        return;
+      }
+
+      const name = lookupNameEl.value.trim();
+      const phone = lookupPhoneEl.value.trim();
+
+      let hasErr = false;
+      markInvalid(lookupNameEl, !name);
+      if (!name) hasErr = true;
+
+      const phoneOk = isValidPhone(phone);
+      markInvalid(lookupPhoneEl, !phoneOk);
+      if (!phoneOk) hasErr = true;
+
+      if (hasErr) {
+        showLookupMsg("error", "내담자명과 연락처(형식: 010-0000-0000)를 모두 정확히 입력해주세요.");
+        return;
+      }
+
+      lookupBtn.disabled = true;
+      const originalText = lookupBtn.textContent;
+      lookupBtn.textContent = "조회 중...";
+
+      const { data, error } = await sb
+        .from(TABLE_NAME)
+        .select(
+          "id, received_at, appointment_at, receptionist_name, receptionist_phone, relationship, receptionist_content, client_name, client_phone, Birth_date, sex_code, client_job, counsel_client_type, counsel_topic"
+        )
+        .eq("client_name", name)
+        .eq("client_phone", phone)
+        .order("received_at", { ascending: false });
+
+      lookupBtn.disabled = !isLoggedIn() ? true : false;
+      lookupBtn.textContent = originalText;
+
+      if (error) {
+        console.error(error);
+        showLookupMsg("error", "조회 중 오류가 발생했습니다: " + error.message);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        showLookupMsg("error", "일치하는 접수 기록이 없습니다.");
+        return;
+      }
+
+      renderLookupList(data);
+    });
+
+    function renderLookupList(rows) {
+      lookupDetailEl.style.display = "none";
+      lookupDetailEl.innerHTML = "";
+
+      let html = `<div class="lookup-result-count">총 ${rows.length}건 조회됨 (최신순)</div>`;
+      rows.forEach((row, idx) => {
+        const target = targetMap[row.counsel_client_type] || row.counsel_client_type || "-";
+        const topic = topicMap[row.counsel_topic] || row.counsel_topic || "-";
+        html += `
+          <div class="lookup-item" data-idx="${idx}">
+            <div class="lookup-item-date">${formatKST(row.received_at)}</div>
+            <div class="lookup-item-sub">상담대상: ${escapeHTML(target)} · 상담주제: ${escapeHTML(topic)}</div>
+          </div>`;
+      });
+      lookupResultListEl.innerHTML = html;
+      lookupResultListEl.style.display = "block";
+
+      lookupResultListEl.querySelectorAll(".lookup-item").forEach((el) => {
+        el.addEventListener("click", () => {
+          const idx = parseInt(el.getAttribute("data-idx"), 10);
+          renderLookupDetail(rows[idx]);
+        });
+      });
+    }
+
+    function renderLookupDetail(row) {
+      lookupResultListEl.style.display = "none";
+
+      const sexName = sexMap[row.sex_code] || row.sex_code || "-";
+      const jobName = jobMap[row.client_job] || row.client_job || "-";
+      const targetName = targetMap[row.counsel_client_type] || row.counsel_client_type || "-";
+      const topicName = topicMap[row.counsel_topic] || row.counsel_topic || "-";
+
+      const html = `
+        <div class="back-link" id="lookupBackBtn">‹ 목록으로 돌아가기</div>
+        <div class="detail-grid">
+          <div class="detail-row"><span class="k">접수일시</span><span class="v">${formatKST(row.received_at)}</span></div>
+          <div class="detail-row"><span class="k">예약일시</span><span class="v">${formatKST(row.appointment_at)}</span></div>
+          <div class="detail-row"><span class="k">접수자명</span><span class="v">${escapeHTML(row.receptionist_name) || "-"}</span></div>
+          <div class="detail-row"><span class="k">접수자<br>연락처</span><span class="v">${escapeHTML(row.receptionist_phone) || "-"}</span></div>
+          <div class="detail-row"><span class="k">내담자<br>관계</span><span class="v">${escapeHTML(row.relationship) || "-"}</span></div>
+          <div class="detail-row"><span class="k">내담자명</span><span class="v">${escapeHTML(row.client_name)}</span></div>
+          <div class="detail-row"><span class="k">성별</span><span class="v">${escapeHTML(sexName)}</span></div>
+          <div class="detail-row"><span class="k">연락처</span><span class="v">${escapeHTML(row.client_phone)}</span></div>
+          <div class="detail-row"><span class="k">생년월일</span><span class="v">${escapeHTML(row.Birth_date) || "-"}</span></div>
+          <div class="detail-row"><span class="k">직업</span><span class="v">${escapeHTML(jobName)}</span></div>
+          <div class="detail-row"><span class="k">상담대상</span><span class="v">${escapeHTML(targetName)}</span></div>
+          <div class="detail-row"><span class="k">상담주제</span><span class="v">${escapeHTML(topicName)}</span></div>
+        </div>
+        <div class="detail-label">접수상담내용</div>
+        <div class="detail-textarea">${escapeHTML(row.receptionist_content) || "작성된 접수상담내용이 없습니다."}</div>
+      `;
+      lookupDetailEl.innerHTML = html;
+      lookupDetailEl.style.display = "block";
+
+      document.getElementById("lookupBackBtn").addEventListener("click", () => {
+        lookupDetailEl.style.display = "none";
+        lookupResultListEl.style.display = "block";
+      });
+    }
   </script>
 </body>
 </html>
