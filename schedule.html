@@ -1,676 +1,506 @@
 <!DOCTYPE html>
 <html lang="ko">
- <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1" name="viewport"/>
-  <title>
-   상담도우미 - 스케줄
-  </title>
-  <style>
-   :root{
-    --blue:#0b4ea2;
-    --blue2:#1565d8;
-    --bg:#f3f7fc;
-    --card:#fff;
-    --ink:#111827;
-    --muted:#64748b;
-    --line:#e5e7eb;
-    --red:#ef4444;
-    --orange:#f97316;
-    --yellow:#eab308;
-    --green:#22c55e;
-    --violet:#7c3aed;
-    --shadow:0 18px 50px rgba(15,23,42,.18)}
-
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>상담도우미 - 스케줄</title>
+<style>
+:root{
+  --blue:#0b4ea2;
+  --blue2:#1565d8;
+  --bg:#f3f7fc;
+  --card:#fff;
+  --ink:#111827;
+  --muted:#64748b;
+  --line:#e5e7eb;
+  --red:#ef4444;
+  --orange:#f97316;
+  --yellow:#eab308;
+  --green:#22c55e;
+  --violet:#7c3aed;
+  --shadow:0 18px 50px rgba(15,23,42,.18)}
 *{box-sizing:border-box}
-
-body{
-    margin:0;
-    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    background:linear-gradient(135deg,#eaf3ff,#fbfdff);
-    color:var(--ink)}
-
+body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(135deg,#eaf3ff,#fbfdff);color:var(--ink)}
 button,input,select,textarea{font:inherit}
-
-.wrap{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px 10px}
-
-.phone{
-    width:min(430px,100%,44vh);
-    aspect-ratio:430/900;
-    height:auto;
-    background:#111;
-    border-radius:42px;
-    padding:12px;
-    box-shadow:var(--shadow)}
-
-.screen{
-    height:100%;
-    border-radius:32px;
-    background:var(--bg);
-    overflow:hidden;
-    position:relative}
-
-.top{
-    height:92px;
-    background:linear-gradient(135deg,#073b86,#0d63ce);
-    color:#fff;
-    padding:12px 18px 10px;
-    position:relative}
-
-.pill{
-    position:absolute;
-    left:50%;
-    top:12px;
-    transform:translateX(-50%);
-    width:116px;
-    height:27px;
-    background:#06152c;
-    border-radius:999px}
-
-.status{
-    display:flex;
-    justify-content:space-between;
-    font-size:13px;
-    font-weight:800;
-    margin-bottom:9px}
-
-.brand{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px}
-
-.brandLeft{
-    display:flex;
-    align-items:center;
-    gap:12px}
-
-.shield{
-    width:42px;
-    height:42px;
-    border-radius:15px;
-    background:linear-gradient(145deg,#dff6ff,#60a5fa);
-    display:grid;
-    place-items:center;
-    font-size:24px}
-
-.brand h1{margin:0; font-size:18px}
-.brand p{margin:3px 0 0; font-size:12px; opacity:.85}
-
-.loginBtn{
-    flex:0 0 auto;
-    display:flex;
-    align-items:center;
-    gap:6px;
-    background:rgba(255,255,255,.16);
-    border:1px solid rgba(255,255,255,.55);
-    color:#fff;
-    font-size:14px;
-    font-weight:900;
-    padding:8px 13px;
-    border-radius:999px;
-    cursor:pointer;
-    white-space:nowrap;
-    backdrop-filter:blur(2px);
-    transition:background .15s ease}
-
-#loginIcon{font-size:18px; line-height:1}
+.wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px 10px}
+.phone{width:min(430px,100%,44vh);aspect-ratio:430/900;height:auto;background:#111;border-radius:42px;padding:12px;box-shadow:var(--shadow)}
+.screen{height:100%;border-radius:32px;background:var(--bg);overflow:hidden;position:relative}
+.top{height:92px;background:linear-gradient(135deg,#073b86,#0d63ce);color:#fff;padding:12px 18px 10px;position:relative}
+.pill{position:absolute;left:50%;top:12px;transform:translateX(-50%);width:116px;height:27px;background:#06152c;border-radius:999px}
+.status{display:flex;justify-content:space-between;font-size:13px;font-weight:800;margin-bottom:9px}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brandLeft{display:flex;align-items:center;gap:12px}
+.shield{width:42px;height:42px;border-radius:15px;background:linear-gradient(145deg,#dff6ff,#60a5fa);display:grid;place-items:center;font-size:24px}
+.brand h1{margin:0;font-size:18px}
+.brand p{margin:3px 0 0;font-size:12px;opacity:.85}
+.loginBtn{flex:0 0 auto;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.55);color:#fff;font-size:14px;font-weight:900;padding:8px 13px;border-radius:999px;cursor:pointer;white-space:nowrap;backdrop-filter:blur(2px);transition:background .15s ease}
+#loginIcon{font-size:18px;line-height:1}
 .loginBtn:active{transform:translateY(1px)}
 .loginBtn:hover{background:rgba(255,255,255,.28)}
-.loginBtn.isAdmin{background:var(--green); color:#fff; border-color:var(--green)}
-
-.content{
-    height:calc(100% - 92px - 84px);
-    overflow:auto;
-    padding:6px 16px 12px;
-    scrollbar-width:none;
-    position:relative}
-
-.pageTitle{margin:10px 0 2px; font-size:17px; font-weight:950}
-.pageDesc{margin:0 0 10px; font-size:12px; color:var(--muted); font-weight:700}
-
-.toolbar{
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:16px;
-    padding:10px 12px;
-    margin-bottom:10px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:8px;
-    box-shadow:0 6px 18px rgba(15,23,42,.06)}
-
-.monthNav{display:flex; align-items:center; gap:6px}
-.monthNav button{
-    width:26px; height:26px;
-    border-radius:8px;
-    border:1px solid var(--line);
-    background:#fff;
-    font-size:13px}
-.monthNav .label{font-size:14px; font-weight:900; min-width:76px; text-align:center}
-.todayBtn{
-    border:1px solid var(--line);
-    background:#fff;
-    border-radius:8px;
-    padding:5px 9px;
-    font-size:11px;
-    color:var(--blue2);
-    font-weight:900}
-
-.calCard{
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:18px;
-    padding:10px;
-    margin-bottom:10px;
-    box-shadow:0 8px 19px rgba(15,23,42,.06)}
-
-.scrollHint{
-    text-align:center;
-    font-size:10px;
-    color:var(--muted);
-    font-weight:700;
-    margin-bottom:6px}
-
-.calScroll{
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    padding-bottom:2px}
+.loginBtn.isAdmin{background:var(--green);color:#fff;border-color:var(--green)}
+.content{height:calc(100% - 92px - 84px);overflow:auto;padding:6px 16px 12px;scrollbar-width:none;position:relative}
+.pageTitle{margin:10px 0 2px;font-size:17px;font-weight:950}
+.pageDesc{margin:0 0 10px;font-size:12px;color:var(--muted);font-weight:700}
+.toolbar{background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 6px 18px rgba(15,23,42,.06)}
+.monthNav{display:flex;align-items:center;gap:6px}
+.monthNav button{width:26px;height:26px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:13px;cursor:pointer}
+.monthNav .label{font-size:14px;font-weight:900;min-width:76px;text-align:center}
+.todayBtn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 9px;font-size:11px;color:var(--blue2);font-weight:900;cursor:pointer}
+.calCard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:10px;margin-bottom:10px;box-shadow:0 8px 19px rgba(15,23,42,.06)}
+.scrollHint{text-align:center;font-size:10px;color:var(--muted);font-weight:700;margin-bottom:6px}
+.calScroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
 .calScroll::-webkit-scrollbar{height:5px}
-.calScroll::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px}
-
-.calGrid{
-    display:grid;
-    grid-template-columns:repeat(6, minmax(66px, max-content));
-    grid-auto-rows:minmax(50px, auto);
-    gap:3px;
-    align-items:stretch}
-
-.wd{
-    text-align:center;
-    font-size:10.5px;
-    color:var(--muted);
-    font-weight:900;
-    padding-bottom:6px;
-    border-bottom:1px solid var(--line);
-    margin-bottom:4px}
+.calScroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+.calGrid{display:grid;grid-template-columns:repeat(6, minmax(66px, max-content));grid-auto-rows:minmax(50px, auto);gap:3px;align-items:stretch}
+.wd{text-align:center;font-size:10.5px;color:var(--muted);font-weight:900;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:4px}
 .wd.sat{color:var(--blue2)}
-
-.cell{
-    border:1px solid var(--line);
-    border-radius:8px;
-    padding:4px;
-    background:#fff;
-    cursor:pointer}
-.cell.other{background:#fafbfc; color:#c8cdd6}
+.cell{border:1px solid var(--line);border-radius:8px;padding:4px;background:#fff;cursor:pointer}
+.cell.other{background:#fafbfc;color:#c8cdd6}
 .cell.today{box-shadow:inset 0 0 0 1px var(--blue2)}
 .cell.selected{box-shadow:inset 0 0 0 2px var(--blue)}
-.cell .dnum{font-size:10.5px; font-weight:900}
+.cell .dnum{font-size:10.5px;font-weight:900}
 .cell.today .dnum{color:var(--blue2)}
-
-.evt{
-    display:flex; align-items:center; gap:3px;
-    margin-top:2px; font-size:8.5px; color:var(--ink);
-    white-space:nowrap}
-.evt::before{content:''; width:5px; height:5px; border-radius:50%; background:var(--line); flex-shrink:0}
+.evt{display:flex;align-items:center;gap:3px;margin-top:2px;font-size:8.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.evt::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--line);flex-shrink:0}
 .evt.done::before{background:var(--green)}
 .evt.notdone::before{background:var(--muted)}
-.evt.pending::before{background:var(--orange)}
-
-.legend{
-    display:flex; flex-wrap:wrap; gap:10px;
-    font-size:10.5px; color:var(--muted); font-weight:800;
-    padding:0 2px 4px}
-.legend span{display:inline-flex; align-items:center; gap:4px}
-.legend i{width:6px; height:6px; border-radius:50%; display:inline-block}
-
-/* 로그인 잠금 오버레이 (콘텐츠 위를 덮음) */
-.lockOverlay{
-    position:absolute;
-    inset:0;
-    background:rgba(243,247,252,.94);
-    display:none;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    padding:24px;
-    z-index:15}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:10.5px;color:var(--muted);font-weight:800;padding:0 2px 4px}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.legend i{width:6px;height:6px;border-radius:50%;display:inline-block}
+.loadingNote{text-align:center;font-size:11px;color:var(--muted);padding:14px 0}
+.lockOverlay{position:absolute;inset:0;background:rgba(243,247,252,.94);display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;z-index:15}
 .lockOverlay.show{display:flex}
-.lockOverlay .ico{font-size:34px; margin-bottom:10px}
-.lockOverlay h3{margin:0 0 4px; font-size:15px}
-.lockOverlay p{margin:0 0 14px; font-size:12px; color:var(--muted); line-height:1.5}
-.lockOverlay button{
-    border:0; border-radius:14px;
-    background:var(--blue2); color:#fff;
-    font-weight:950; padding:11px 22px; font-size:13px; cursor:pointer}
-
-/* 바텀시트 */
-.sheetOverlay{
-    position:absolute; inset:0;
-    background:rgba(15,23,42,.35);
-    opacity:0; pointer-events:none;
-    transition:opacity .2s ease;
-    z-index:20}
-.sheetOverlay.open{opacity:1; pointer-events:auto}
-
-.sheet{
-    position:absolute; left:0; right:0; bottom:0;
-    background:#fff;
-    border-radius:20px 20px 0 0;
-    box-shadow:0 -4px 20px rgba(0,0,0,.15);
-    transform:translateY(100%);
-    transition:transform .25s ease;
-    z-index:21;
-    max-height:65%;
-    display:flex;
-    flex-direction:column}
+.lockOverlay .ico{font-size:34px;margin-bottom:10px}
+.lockOverlay h3{margin:0 0 4px;font-size:15px}
+.lockOverlay p{margin:0 0 14px;font-size:12px;color:var(--muted);line-height:1.5}
+.lockOverlay button{border:0;border-radius:14px;background:var(--blue2);color:#fff;font-weight:950;padding:11px 22px;font-size:13px;cursor:pointer}
+.sheetOverlay{position:absolute;inset:0;background:rgba(15,23,42,.35);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:20}
+.sheetOverlay.open{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.15);transform:translateY(100%);transition:transform .25s ease;z-index:21;max-height:65%;display:flex;flex-direction:column}
 .sheet.open{transform:translateY(0)}
-.sheetHandle{width:36px; height:4px; background:var(--line); border-radius:3px; margin:10px auto 6px}
-.sheetHead{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0 16px 8px; border-bottom:1px solid var(--line)}
-.sheetHead h3{font-size:14px; margin:0}
-.sheetHead .cnt{font-size:11px; color:var(--muted); margin-top:2px; font-weight:800}
-.sheetClose{
-    width:26px; height:26px; border-radius:50%;
-    border:1px solid var(--line); background:#fff; font-size:13px; color:var(--muted)}
-.sheetBody{overflow-y:auto; padding:0 16px}
-.sItem{display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--line)}
+.sheetHandle{width:36px;height:4px;background:var(--line);border-radius:3px;margin:10px auto 6px}
+.sheetHead{display:flex;align-items:center;justify-content:space-between;padding:0 16px 8px;border-bottom:1px solid var(--line)}
+.sheetHead h3{font-size:14px;margin:0}
+.sheetHead .cnt{font-size:11px;color:var(--muted);margin-top:2px;font-weight:800}
+.sheetClose{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:13px;color:var(--muted)}
+.sheetBody{overflow-y:auto;padding:0 16px}
+.sItem{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .sItem:last-child{border-bottom:none}
-.sTime{font-size:12px; font-weight:900; color:var(--blue2); min-width:42px}
-.sInfo .name{font-size:13px; font-weight:900}
-.sInfo .sub{font-size:11px; color:var(--muted); margin-top:2px; font-weight:700}
-.sBadge{display:inline-block; font-size:10px; padding:1px 7px; border-radius:999px; margin-left:5px; font-weight:900}
-.sEmpty{padding:26px 0; text-align:center; font-size:12px; color:var(--muted)}
-.addBtn{
-    display:block; width:calc(100% - 32px); margin:8px 16px 14px;
-    padding:10px; border-radius:12px; border:1px dashed var(--line);
-    background:#fff; color:var(--muted); font-size:12px; font-weight:800}
-
-.tabs{
-    position:absolute; left:0; right:0; bottom:0; height:84px;
-    background:#fff; border-top:1px solid #e5e7eb;
-    display:grid; grid-template-columns:repeat(5,1fr); padding:8px}
-.tab{
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:2px; color:#64748b; font-size:11px; font-weight:850;
-    cursor:pointer; text-decoration:none; position:relative}
+.sTime{font-size:12px;font-weight:900;color:var(--blue2);min-width:42px}
+.sInfo .name{font-size:13px;font-weight:900}
+.sInfo .sub{font-size:11px;color:var(--muted);margin-top:2px;font-weight:700}
+.sBadge{display:inline-block;font-size:10px;padding:1px 7px;border-radius:999px;margin-left:5px;font-weight:900}
+.sEmpty{padding:26px 0;text-align:center;font-size:12px;color:var(--muted)}
+.tabs{position:absolute;left:0;right:0;bottom:0;height:84px;background:#fff;border-top:1px solid #e5e7eb;display:grid;grid-template-columns:repeat(5,1fr);padding:8px}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#64748b;font-size:11px;font-weight:850;cursor:pointer;text-decoration:none;position:relative}
 .tab.active{color:#0b4ea2}
-.plus{
-    margin-top:-25px; width:58px; height:58px; border-radius:50%;
-    background:#0b4ea2; color:#fff; border:5px solid #fff;
-    display:grid; place-items:center; font-size:35px}
-.lockBadge{
-    position:absolute; top:-2px; right:16px;
-    width:16px; height:16px; border-radius:50%;
-    background:#111827; color:#fff; font-size:9px;
-    display:none; align-items:center; justify-content:center}
-
-.modalOverlay{
-    position:fixed; inset:0; background:rgba(15,23,42,.55);
-    display:none; align-items:center; justify-content:center;
-    z-index:999; padding:20px}
+.plus{margin-top:-25px;width:58px;height:58px;border-radius:50%;background:#0b4ea2;color:#fff;border:5px solid #fff;display:grid;place-items:center;font-size:35px}
+.lockBadge{position:absolute;top:-2px;right:16px;width:16px;height:16px;border-radius:50%;background:#111827;color:#fff;font-size:9px;display:none;align-items:center;justify-content:center}
+.modalOverlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;z-index:999;padding:20px}
 .modalOverlay.open{display:flex}
-.loginModal{
-    width:100%; max-width:320px; background:#fff; border-radius:22px;
-    padding:22px 20px 20px; box-shadow:0 24px 60px rgba(15,23,42,.35); position:relative}
-.loginModal h3{margin:0 0 4px; font-size:17px; color:var(--blue)}
-.loginModal p.sub{margin:0 0 16px; font-size:12px; color:var(--muted)}
-.modalClose{
-    position:absolute; right:14px; top:14px; width:28px; height:28px;
-    border:0; background:#f1f5f9; border-radius:50%; color:#475569; font-size:15px; cursor:pointer}
+.loginModal{width:100%;max-width:320px;background:#fff;border-radius:22px;padding:22px 20px 20px;box-shadow:0 24px 60px rgba(15,23,42,.35);position:relative}
+.loginModal h3{margin:0 0 4px;font-size:17px;color:var(--blue)}
+.loginModal p.sub{margin:0 0 16px;font-size:12px;color:var(--muted)}
+.modalClose{position:absolute;right:14px;top:14px;width:28px;height:28px;border:0;background:#f1f5f9;border-radius:50%;color:#475569;font-size:15px;cursor:pointer}
 .loginModal .row{margin-bottom:10px}
-.loginModal .row label{font-size:11px; color:#334155; font-weight:900; margin-bottom:4px; display:block}
-.loginModal .row input{border:1px solid #dbe4f0; border-radius:11px; padding:11px; width:100%; font-size:13px}
-.loginModal .errorMsg{
-    display:none; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c;
-    font-size:11px; font-weight:800; border-radius:10px; padding:7px 9px; margin-bottom:10px}
+.loginModal .row label{font-size:11px;color:#334155;font-weight:900;margin-bottom:4px;display:block}
+.loginModal .row input{border:1px solid #dbe4f0;border-radius:11px;padding:11px;width:100%;font-size:13px}
+.loginModal .errorMsg{display:none;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:11px;font-weight:800;border-radius:10px;padding:7px 9px;margin-bottom:10px}
 .loginModal .errorMsg.show{display:block}
-.loginModal .btnRow{display:flex; gap:8px; margin-top:14px}
-.btn{
-    width:100%; border:0; border-radius:14px; background:#1565d8; color:#fff;
-    font-weight:950; padding:12px; cursor:pointer; text-align:center; text-decoration:none; display:block}
-.loginModal .btnRow .cancelBtn{background:#f1f5f9; color:#0f172a}
-.loginModal .noteMini{margin-top:12px; font-size:10px; color:#94a3b8; line-height:1.5; text-align:center}
-  </style>
- </head>
- <body>
-  <div class="wrap">
-   <main class="phone">
-    <div class="screen">
-     <header class="top">
-      <div class="pill"></div>
-      <div class="status"><span>9:41</span><span>●●● 5G 🔋</span></div>
-      <div class="brand">
-       <div class="brandLeft">
-        <div class="shield">🗓️</div>
-        <div><h1>스케줄</h1></div>
-       </div>
-       <button class="loginBtn" id="loginTrigger" type="button" onclick="openLoginModal()">
-        <span id="loginIcon">🔒</span>
-        <span id="loginLabel">로그인</span>
-       </button>
-      </div>
-     </header>
-
-     <section class="content">
-      <div class="pageTitle">스케줄 관리</div>
-      <div class="pageDesc">날짜를 탭하면 하단에서 예약 목록이 올라옵니다</div>
-
-      <div class="toolbar">
-       <div class="monthNav">
-        <button>‹</button>
-        <div class="label">2026년 7월</div>
-        <button>›</button>
-       </div>
-       <button class="todayBtn">오늘</button>
-      </div>
-
-      <div class="calCard">
-       <div class="legend">
-        <span><i style="background:var(--green)"></i>완료</span>
-        <span><i style="background:var(--muted)"></i>미실시</span>
-        <span><i style="background:var(--line);border:1px solid var(--muted)"></i>예정</span>
-        <span><i style="background:var(--orange)"></i>접수대기</span>
-       </div>
-       <div class="scrollHint">← 옆으로 밀면 전체 요일을 볼 수 있어요 →</div>
-       <div class="calScroll">
-       <div class="calGrid">
-        <div class="wd">월</div>
-        <div class="wd">화</div>
-        <div class="wd">수</div>
-        <div class="wd">목</div>
-        <div class="wd">금</div>
-        <div class="wd sat">토</div>
-        <div class="cell other"><div class="dnum">29</div></div>
-        <div class="cell other"><div class="dnum">30</div></div>
-        <div class="cell" data-day="1" onclick="openDay(1)"><div class="dnum">1</div><div class="evt done"><span class="evtName">10:00 김민서</span></div></div>
-        <div class="cell" data-day="2" onclick="openDay(2)"><div class="dnum">2</div></div>
-        <div class="cell" data-day="3" onclick="openDay(3)"><div class="dnum">3</div><div class="evt notdone"><span class="evtName">14:00 이도윤</span></div></div>
-        <div class="cell" data-day="4" onclick="openDay(4)"><div class="dnum">4</div></div>
-
-        <div class="cell" data-day="6" onclick="openDay(6)"><div class="dnum">6</div><div class="evt done"><span class="evtName">11:00 박서연</span></div></div>
-        <div class="cell" data-day="7" onclick="openDay(7)"><div class="dnum">7</div></div>
-        <div class="cell" data-day="8" onclick="openDay(8)"><div class="dnum">8</div><div class="evt done"><span class="evtName">09:30 최지훈</span></div><div class="evt pending"><span class="evtName">16:00 정하은</span></div></div>
-        <div class="cell" data-day="9" onclick="openDay(9)"><div class="dnum">9</div></div>
-        <div class="cell" data-day="10" onclick="openDay(10)"><div class="dnum">10</div><div class="evt done"><span class="evtName">13:00 한소율</span></div></div>
-        <div class="cell" data-day="11" onclick="openDay(11)"><div class="dnum">11</div></div>
-
-        <div class="cell today selected" id="cell-13" data-day="13" onclick="openDay(13)">
-         <div class="dnum">13</div>
-         <div class="evt done"><span class="evtName">10:00 김민서</span></div>
-         <div class="evt"><span class="evtName">13:30 이도윤</span></div>
-         <div class="evt pending"><span class="evtName">15:00 신규상담</span></div>
-         <div class="evt"><span class="evtName">17:00 박서연</span></div>
-        </div>
-        <div class="cell" data-day="14" onclick="openDay(14)"><div class="dnum">14</div><div class="evt"><span class="evtName">11:00 박서연</span></div></div>
-        <div class="cell" data-day="15" onclick="openDay(15)"><div class="dnum">15</div></div>
-        <div class="cell" data-day="16" onclick="openDay(16)"><div class="dnum">16</div><div class="evt"><span class="evtName">14:30 최지훈</span></div></div>
-        <div class="cell" data-day="17" onclick="openDay(17)"><div class="dnum">17</div></div>
-        <div class="cell" data-day="18" onclick="openDay(18)"><div class="dnum">18</div><div class="evt"><span class="evtName">10:30 김지우</span></div></div>
-
-        <div class="cell" data-day="20" onclick="openDay(20)"><div class="dnum">20</div><div class="evt"><span class="evtName">10:00 정하은</span></div></div>
-        <div class="cell" data-day="21" onclick="openDay(21)"><div class="dnum">21</div></div>
-        <div class="cell" data-day="22" onclick="openDay(22)"><div class="dnum">22</div><div class="evt"><span class="evtName">09:00 한소율</span></div></div>
-        <div class="cell" data-day="23" onclick="openDay(23)"><div class="dnum">23</div></div>
-        <div class="cell" data-day="24" onclick="openDay(24)"><div class="dnum">24</div></div>
-        <div class="cell" data-day="25" onclick="openDay(25)"><div class="dnum">25</div></div>
-
-        <div class="cell" data-day="27" onclick="openDay(27)"><div class="dnum">27</div></div>
-        <div class="cell" data-day="28" onclick="openDay(28)"><div class="dnum">28</div></div>
-        <div class="cell" data-day="29" onclick="openDay(29)"><div class="dnum">29</div></div>
-        <div class="cell" data-day="30" onclick="openDay(30)"><div class="dnum">30</div></div>
-        <div class="cell" data-day="31" onclick="openDay(31)"><div class="dnum">31</div></div>
-        <div class="cell other"><div class="dnum">1</div></div>
-       </div>
-       </div>
-      </div>
-
-      <!-- 비로그인 상태 잠금 오버레이 -->
-      <div class="lockOverlay" id="lockOverlay">
-       <div class="ico">🔒</div>
-       <h3>로그인이 필요합니다</h3>
-       <p>스케줄 화면은 상담사 로그인 후에만<br/>확인하고 관리할 수 있습니다.</p>
-       <button type="button" onclick="openLoginModal()">로그인하기</button>
-      </div>
-     </section>
-
-     <div class="sheetOverlay" id="overlay" onclick="closeSheet()"></div>
-     <div class="sheet" id="sheet">
-      <div class="sheetHandle"></div>
-      <div class="sheetHead">
-       <div>
-        <h3 id="sheetTitle">7월 13일 (월) 예약</h3>
-        <div class="cnt" id="sheetCount">총 4건</div>
-       </div>
-       <button class="sheetClose" onclick="closeSheet()">✕</button>
-      </div>
-      <div class="sheetBody" id="sheetList"></div>
+.loginModal .btnRow{display:flex;gap:8px;margin-top:14px}
+.btn{width:100%;border:0;border-radius:14px;background:#1565d8;color:#fff;font-weight:950;padding:12px;cursor:pointer;text-align:center;text-decoration:none;display:block}
+.loginModal .btnRow .cancelBtn{background:#f1f5f9;color:#0f172a}
+.loginModal .noteMini{margin-top:12px;font-size:10px;color:#94a3b8;line-height:1.5;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <main class="phone">
+  <div class="screen">
+   <header class="top">
+    <div class="pill"></div>
+    <div class="status"><span>9:41</span><span>●●● 5G 🔋</span></div>
+    <div class="brand">
+     <div class="brandLeft">
+      <div class="shield">🗓️</div>
+      <div><h1>스케줄</h1></div>
      </div>
-
-     <nav class="tabs">
-      <a class="tab" href="index.html">🏠<span>홈</span></a>
-      <a class="tab" href="consult_receipt_register.html">🔎<span>예약등록</span></a>
-      <a class="tab" href="Consultation_registration.html" data-requires-login="true">
-       <span class="lockBadge">🔒</span>
-       <div class="plus">+</div>
-       <span>상담등록</span>
-      </a>
-      <a class="tab" href="consultation_edit_save.html" data-requires-login="true">
-       <span class="lockBadge">🔒</span>
-       📊<span>조회/저장</span>
-      </a>
-      <a class="tab active" href="schedule.html" data-requires-login="true">
-       <span class="lockBadge">🔒</span>
-       🗓️<span>스케줄</span>
-      </a>
-     </nav>
-
-     <div class="modalOverlay" id="loginModalOverlay">
-      <div class="loginModal">
-       <button class="modalClose" type="button" onclick="closeLoginModal()">✕</button>
-       <h3>관리자 로그인</h3>
-       <p class="sub">로그인하면 등록·수정·조회 기능이 열립니다.</p>
-       <div class="errorMsg" id="loginError">아이디 또는 비밀번호를 확인해주세요.</div>
-       <div class="row">
-        <label for="loginId">이메일</label>
-        <input id="loginId" type="email" placeholder="이메일을 입력하세요" autocomplete="email" />
-       </div>
-       <div class="row">
-        <label for="loginPw">비밀번호</label>
-        <input id="loginPw" type="password" placeholder="비밀번호를 입력하세요" autocomplete="current-password" />
-       </div>
-       <div class="btnRow">
-        <button class="btn cancelBtn" type="button" onclick="closeLoginModal()">취소</button>
-        <button class="btn" type="button" onclick="submitLogin()">로그인</button>
-       </div>
-       <p class="noteMini">※ 관리자 계정으로 로그인하면 등록·수정·조회 기능이 열립니다.</p>
-      </div>
-     </div>
-
+     <button class="loginBtn" id="loginTrigger" type="button" onclick="openLoginModal()">
+      <span id="loginIcon">🔒</span><span id="loginLabel">로그인</span>
+     </button>
     </div>
-   </main>
+   </header>
+
+   <section class="content">
+    <div class="pageTitle">스케줄 관리</div>
+    <div class="pageDesc">날짜를 탭하면 하단에서 예약 목록이 올라옵니다</div>
+
+    <div class="toolbar">
+     <div class="monthNav">
+      <button id="prevMonthBtn" type="button">‹</button>
+      <div class="label" id="monthLabel">-</div>
+      <button id="nextMonthBtn" type="button">›</button>
+     </div>
+     <button class="todayBtn" id="todayBtn" type="button">오늘</button>
+    </div>
+
+    <div class="calCard">
+     <div class="legend">
+      <span><i style="background:var(--green)"></i>완료</span>
+      <span><i style="background:var(--muted)"></i>미실시</span>
+     </div>
+     <div class="scrollHint">← 옆으로 밀면 전체 요일을 볼 수 있어요 →</div>
+     <div class="calScroll">
+      <div class="calGrid" id="calGrid">
+       <div class="wd">월</div><div class="wd">화</div><div class="wd">수</div><div class="wd">목</div><div class="wd">금</div><div class="wd sat">토</div>
+      </div>
+     </div>
+     <div class="loadingNote" id="loadingNote" style="display:none">불러오는 중...</div>
+    </div>
+
+    <div class="lockOverlay" id="lockOverlay">
+     <div class="ico">🔒</div>
+     <h3>로그인이 필요합니다</h3>
+     <p>스케줄 화면은 상담사 로그인 후에만<br/>확인하고 관리할 수 있습니다.</p>
+     <button type="button" onclick="openLoginModal()">로그인하기</button>
+    </div>
+   </section>
+
+   <div class="sheetOverlay" id="overlay" onclick="closeSheet()"></div>
+   <div class="sheet" id="sheet">
+    <div class="sheetHandle"></div>
+    <div class="sheetHead">
+     <div>
+      <h3 id="sheetTitle">예약</h3>
+      <div class="cnt" id="sheetCount">총 0건</div>
+     </div>
+     <button class="sheetClose" onclick="closeSheet()">✕</button>
+    </div>
+    <div class="sheetBody" id="sheetList"></div>
+   </div>
+
+   <nav class="tabs">
+    <a class="tab" href="index.html">🏠<span>홈</span></a>
+    <a class="tab" href="consult_receipt_register.html">🔎<span>예약등록</span></a>
+    <a class="tab" href="Consultation_registration.html" data-requires-login="true">
+     <span class="lockBadge">🔒</span><div class="plus">+</div><span>상담등록</span>
+    </a>
+    <a class="tab" href="consultation_edit_save.html" data-requires-login="true">
+     <span class="lockBadge">🔒</span>📊<span>조회/저장</span>
+    </a>
+    <a class="tab active" href="schedule.html" data-requires-login="true">
+     <span class="lockBadge">🔒</span>🗓️<span>스케줄</span>
+    </a>
+   </nav>
+
+   <div class="modalOverlay" id="loginModalOverlay">
+    <div class="loginModal">
+     <button class="modalClose" type="button" onclick="closeLoginModal()">✕</button>
+     <h3>관리자 로그인</h3>
+     <p class="sub">로그인하면 등록·수정·조회 기능이 열립니다.</p>
+     <div class="errorMsg" id="loginError">아이디 또는 비밀번호를 확인해주세요.</div>
+     <div class="row">
+      <label for="loginId">이메일</label>
+      <input id="loginId" type="email" placeholder="이메일을 입력하세요" autocomplete="email"/>
+     </div>
+     <div class="row">
+      <label for="loginPw">비밀번호</label>
+      <input id="loginPw" type="password" placeholder="비밀번호를 입력하세요" autocomplete="current-password"/>
+     </div>
+     <div class="btnRow">
+      <button class="btn cancelBtn" type="button" onclick="closeLoginModal()">취소</button>
+      <button class="btn" type="button" onclick="submitLogin()">로그인</button>
+     </div>
+     <p class="noteMini">※ 관리자 계정으로 로그인하면 등록·수정·조회 기능이 열립니다.</p>
+    </div>
+   </div>
+
   </div>
+ </main>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    // ===== Supabase 연결 설정 (index.html과 동일) =====
-    const SUPABASE_URL = "https://fafdxaifluftnertbpvr.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_RNEAVQD2wZRtZojxVU11aA_Dacmf7db";
-    let sb = null;
-    try {
-      if (!window.supabase) throw new Error("Supabase 라이브러리를 불러오지 못했습니다.");
-      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true }
-      });
-    } catch (err) {
-      console.error("Supabase 초기화 실패:", err);
-    }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ===================== Supabase 연결 =====================
+const SUPABASE_URL = "https://fafdxaifluftnertbpvr.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_RNEAVQD2wZRtZojxVU11aA_Dacmf7db";
+let sb = null;
+try {
+  if (!window.supabase) throw new Error("Supabase 라이브러리를 불러오지 못했습니다.");
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true }
+  });
+} catch (err) { console.error("Supabase 초기화 실패:", err); }
 
-    let currentSession = null;
-    function isLoggedIn(){ return !!currentSession; }
+let currentSession = null;
+function isLoggedIn(){ return !!currentSession; }
 
-    const loginOverlay = document.getElementById('loginModalOverlay');
-    const loginTrigger = document.getElementById('loginTrigger');
-    const loginIcon = document.getElementById('loginIcon');
-    const loginLabel = document.getElementById('loginLabel');
-    const loginError = document.getElementById('loginError');
-    const lockOverlay = document.getElementById('lockOverlay');
+const loginOverlay = document.getElementById('loginModalOverlay');
+const loginTrigger = document.getElementById('loginTrigger');
+const loginIcon = document.getElementById('loginIcon');
+const loginLabel = document.getElementById('loginLabel');
+const loginError = document.getElementById('loginError');
+const lockOverlay = document.getElementById('lockOverlay');
 
-    async function openLoginModal(){
-      if (isLoggedIn()) {
-        if (confirm('로그아웃 하시겠습니까?')) {
-          if (sb) await sb.auth.signOut();
-          currentSession = null;
-          updateLoginButton();
-        }
-        return;
-      }
-      loginError.classList.remove('show');
-      document.getElementById('loginId').value = '';
-      document.getElementById('loginPw').value = '';
-      loginOverlay.classList.add('open');
-    }
-    function closeLoginModal(){ loginOverlay.classList.remove('open'); }
-    function showLoginError(message){ loginError.textContent = message; loginError.classList.add('show'); }
-
-    async function submitLogin(){
-      const id = document.getElementById('loginId').value.trim();
-      const pw = document.getElementById('loginPw').value.trim();
-      if (!id || !pw) { showLoginError('이메일과 비밀번호를 모두 입력해주세요.'); return; }
-      if (!sb) { showLoginError('로그인 서버 연결에 실패했습니다. 인터넷 연결을 확인해주세요.'); return; }
-
-      const loginBtnEl = document.querySelector('.loginModal .btnRow .btn:not(.cancelBtn)');
-      if (loginBtnEl) { loginBtnEl.disabled = true; loginBtnEl.textContent = '확인 중...'; }
-      const { data, error } = await sb.auth.signInWithPassword({ email: id, password: pw });
-      if (loginBtnEl) { loginBtnEl.disabled = false; loginBtnEl.textContent = '로그인'; }
-
-      if (error) { showLoginError('이메일 또는 비밀번호가 올바르지 않습니다.'); return; }
-      currentSession = data.session;
+async function openLoginModal(){
+  if (isLoggedIn()) {
+    if (confirm('로그아웃 하시겠습니까?')) {
+      if (sb) await sb.auth.signOut();
+      currentSession = null;
       updateLoginButton();
-      closeLoginModal();
     }
+    return;
+  }
+  loginError.classList.remove('show');
+  document.getElementById('loginId').value = '';
+  document.getElementById('loginPw').value = '';
+  loginOverlay.classList.add('open');
+}
+function closeLoginModal(){ loginOverlay.classList.remove('open'); }
+function showLoginError(message){ loginError.textContent = message; loginError.classList.add('show'); }
 
-    function updateLoginButton(){
-      if (isLoggedIn()) {
-        loginTrigger.classList.add('isAdmin');
-        loginIcon.textContent = '🔓';
-        loginLabel.textContent = '관리자';
-        lockOverlay.classList.remove('show');
-      } else {
-        loginTrigger.classList.remove('isAdmin');
-        loginIcon.textContent = '🔒';
-        loginLabel.textContent = '로그인';
-        // 스케줄 페이지는 로그인 필수 -> 잠금 오버레이 노출 + 로그인 모달 자동 오픈
-        lockOverlay.classList.add('show');
-        loginOverlay.classList.add('open');
-      }
-      updateMenuLockState();
+async function submitLogin(){
+  const id = document.getElementById('loginId').value.trim();
+  const pw = document.getElementById('loginPw').value.trim();
+  if (!id || !pw) { showLoginError('이메일과 비밀번호를 모두 입력해주세요.'); return; }
+  if (!sb) { showLoginError('로그인 서버 연결에 실패했습니다. 인터넷 연결을 확인해주세요.'); return; }
+  const loginBtnEl = document.querySelector('.loginModal .btnRow .btn:not(.cancelBtn)');
+  if (loginBtnEl) { loginBtnEl.disabled = true; loginBtnEl.textContent = '확인 중...'; }
+  const { data, error } = await sb.auth.signInWithPassword({ email: id, password: pw });
+  if (loginBtnEl) { loginBtnEl.disabled = false; loginBtnEl.textContent = '로그인'; }
+  if (error) { showLoginError('이메일 또는 비밀번호가 올바르지 않습니다.'); return; }
+  currentSession = data.session;
+  updateLoginButton();
+  closeLoginModal();
+}
+
+function updateLoginButton(){
+  if (isLoggedIn()) {
+    loginTrigger.classList.add('isAdmin');
+    loginIcon.textContent = '🔓';
+    loginLabel.textContent = '관리자';
+    lockOverlay.classList.remove('show');
+    loadMonth(viewYear, viewMonth);
+  } else {
+    loginTrigger.classList.remove('isAdmin');
+    loginIcon.textContent = '🔒';
+    loginLabel.textContent = '로그인';
+    lockOverlay.classList.add('show');
+    loginOverlay.classList.add('open');
+  }
+  updateMenuLockState();
+}
+
+function updateMenuLockState(){
+  document.querySelectorAll('[data-requires-login]').forEach((el) => {
+    if (isLoggedIn()) el.classList.remove('locked');
+    else el.classList.add('locked');
+  });
+}
+
+document.addEventListener('click', function(e){
+  const link = e.target.closest('[data-requires-login]');
+  if (!link) return;
+  if (!isLoggedIn()) { e.preventDefault(); openLoginModal(); }
+}, true);
+
+loginOverlay.addEventListener('click', (e) => { if (e.target === loginOverlay) closeLoginModal(); });
+
+async function initAuth(){
+  if (!sb) { updateLoginButton(); return; }
+  const { data } = await sb.auth.getSession();
+  currentSession = data.session;
+  updateLoginButton();
+  sb.auth.onAuthStateChange((_event, session) => {
+    currentSession = session;
+    updateLoginButton();
+  });
+}
+
+// ===================== KST 유틸 =====================
+function toKST(utcIsoString){
+  const ms = new Date(utcIsoString).getTime();
+  return new Date(ms + 9 * 60 * 60 * 1000);
+}
+function kstNow(){ return toKST(new Date().toISOString()); }
+// KST 특정 월의 [시작,끝) 을 UTC ISO로 변환 (한국 DST 없음, 항상 +9)
+function kstMonthRangeToUTC(year, month /*1-12*/){
+  const utcStart = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0) - 9 * 60 * 60 * 1000);
+  const utcEndExclusive = new Date(Date.UTC(year, month, 1, 0, 0, 0) - 9 * 60 * 60 * 1000);
+  return { utcStart: utcStart.toISOString(), utcEndExclusive: utcEndExclusive.toISOString() };
+}
+function fmtHHMM(kstDate){
+  const h = String(kstDate.getUTCHours()).padStart(2,'0');
+  const m = String(kstDate.getUTCMinutes()).padStart(2,'0');
+  return `${h}:${m}`;
+}
+
+// ===================== 달력 상태 =====================
+const nowK = kstNow();
+let viewYear = nowK.getUTCFullYear();
+let viewMonth = nowK.getUTCMonth() + 1; // 1-12
+let monthEvents = {}; // { day: [ {time,name,phone,session,status,label} ] }
+let selectedDay = null;
+
+function buildCalendarCells(year, month){
+  const firstDay = new Date(Date.UTC(year, month - 1, 1));
+  const jsWeekday = firstDay.getUTCDay();
+  const mondayIndex = (jsWeekday + 6) % 7;
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const prevDaysInMonth = new Date(Date.UTC(year, month - 1, 0)).getUTCDate();
+  const cells = [];
+  for (let i = mondayIndex - 1; i >= 0; i--) cells.push({ day: prevDaysInMonth - i, other: true, key: 'p'+(prevDaysInMonth-i) });
+  for (let d = 1; d <= daysInMonth; d++) cells.push({ day: d, other: false, key: 'c'+d });
+  let nextD = 1;
+  while (cells.length % 6 !== 0) { cells.push({ day: nextD, other: true, key: 'n'+nextD }); nextD++; }
+  return cells;
+}
+
+function badgeStyle(status){
+  if (status === 'done') return 'background:#dcfce7;color:#15803d;';
+  return 'background:#f1f5f9;color:#475569;';
+}
+
+function renderCalendarGrid(){
+  document.getElementById('monthLabel').textContent = `${viewYear}년 ${viewMonth}월`;
+  const grid = document.getElementById('calGrid');
+  // 요일 헤더 5개 남기고 나머지 제거
+  while (grid.children.length > 6) grid.removeChild(grid.lastChild);
+
+  const cells = buildCalendarCells(viewYear, viewMonth);
+  const isCurrentMonthShown = (viewYear === nowK.getUTCFullYear() && viewMonth === (nowK.getUTCMonth()+1));
+  const todayDay = nowK.getUTCDate();
+
+  cells.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'cell' + (c.other ? ' other' : '');
+    if (!c.other && isCurrentMonthShown && c.day === todayDay) div.classList.add('today');
+    if (!c.other && selectedDay === c.day) div.classList.add('selected');
+    if (!c.other) {
+      div.dataset.day = c.day;
+      div.addEventListener('click', () => openDay(c.day));
     }
+    const dnum = document.createElement('div');
+    dnum.className = 'dnum';
+    dnum.textContent = c.day;
+    div.appendChild(dnum);
 
-    function updateMenuLockState(){
-      document.querySelectorAll('[data-requires-login]').forEach((el) => {
-        if (isLoggedIn()) el.classList.remove('locked');
-        else el.classList.add('locked');
+    if (!c.other && monthEvents[c.day]) {
+      monthEvents[c.day].forEach(ev => {
+        const evtDiv = document.createElement('div');
+        evtDiv.className = 'evt ' + (ev.status === 'done' ? 'done' : 'notdone');
+        const span = document.createElement('span');
+        span.className = 'evtName';
+        span.textContent = `${ev.time} ${ev.name}`;
+        evtDiv.appendChild(span);
+        div.appendChild(evtDiv);
       });
     }
+    grid.appendChild(div);
+  });
+}
 
-    document.addEventListener('click', function(e){
-      const link = e.target.closest('[data-requires-login]');
-      if (!link) return;
-      if (!isLoggedIn()) { e.preventDefault(); openLoginModal(); }
-    }, true);
+async function loadMonth(year, month){
+  if (!sb || !isLoggedIn()) return;
+  const loadingNote = document.getElementById('loadingNote');
+  loadingNote.style.display = 'block';
 
-    loginOverlay.addEventListener('click', (e) => { if (e.target === loginOverlay) closeLoginModal(); });
+  const { utcStart, utcEndExclusive } = kstMonthRangeToUTC(year, month);
 
-    async function initAuth(){
-      if (!sb) { updateLoginButton(); return; }
-      const { data } = await sb.auth.getSession();
-      currentSession = data.session;
-      updateLoginButton();
-      sb.auth.onAuthStateChange((_event, session) => {
-        currentSession = session;
-        updateLoginButton();
-      });
-    }
-    initAuth();
+  // 표시 날짜 우선순위: Consultation_reservation_time 있으면 그 값, 없으면 appointment_at
+  const orFilter = `and(Consultation_reservation_time.gte.${utcStart},Consultation_reservation_time.lt.${utcEndExclusive}),and(Consultation_reservation_time.is.null,appointment_at.gte.${utcStart},appointment_at.lt.${utcEndExclusive})`;
 
-    // ===== 스케줄 캘린더 (목업 샘플 데이터 - 추후 db_sina_counsel 연동 예정) =====
-    const scheduleData = {
-      1:  [{time:'10:00', name:'김민서', status:'done', label:'완료', session:'1회기', phone:'010-1234-5678', type:'대면상담'}],
-      3:  [{time:'14:00', name:'이도윤', status:'notdone', label:'미실시', session:'3회기', phone:'010-2345-6789', type:'대면상담'}],
-      6:  [{time:'11:00', name:'박서연', status:'done', label:'완료', session:'1회기', phone:'010-4567-8901', type:'전화상담'}],
-      8:  [
-            {time:'09:30', name:'최지훈', status:'done', label:'완료', session:'2회기', phone:'010-5678-9012', type:'대면상담'},
-            {time:'16:00', name:'정하은', status:'pending', label:'접수대기', session:'접수', phone:'010-6789-0123', type:'접수상담'}
-          ],
-      10: [{time:'13:00', name:'한소율', status:'done', label:'완료', session:'1회기', phone:'010-7890-1234', type:'대면상담'}],
-      13: [
-            {time:'10:00', name:'김민서', status:'done', label:'완료', session:'3회기', phone:'010-1234-5678', type:'대면상담'},
-            {time:'13:30', name:'이도윤', status:'upcoming', label:'예정', session:'5회기', phone:'010-2345-6789', type:'대면상담'},
-            {time:'15:00', name:'신규상담', status:'pending', label:'접수대기', session:'접수', phone:'010-3456-7890', type:'접수상담'},
-            {time:'17:00', name:'박서연', status:'upcoming', label:'예정', session:'2회기', phone:'010-4567-8901', type:'전화상담'}
-          ],
-      14: [{time:'11:00', name:'박서연', status:'upcoming', label:'예정', session:'3회기', phone:'010-4567-8901', type:'전화상담'}],
-      16: [{time:'14:30', name:'최지훈', status:'upcoming', label:'예정', session:'3회기', phone:'010-5678-9012', type:'대면상담'}],
-      18: [{time:'10:30', name:'김지우', status:'upcoming', label:'예정', session:'1회기', phone:'010-8901-2345', type:'대면상담'}],
-      20: [{time:'10:00', name:'정하은', status:'upcoming', label:'예정', session:'2회기', phone:'010-6789-0123', type:'대면상담'}],
-      22: [{time:'09:00', name:'한소율', status:'upcoming', label:'예정', session:'2회기', phone:'010-7890-1234', type:'대면상담'}]
+  const { data, error } = await sb
+    .from('db_sina_counsel')
+    .select('id, client_name, client_phone, Counseling_session, appointment_at, Consultation_reservation_time, Consultation_start_time, Consultation_end_time')
+    .or(orFilter);
+
+  loadingNote.style.display = 'none';
+
+  if (error) {
+    console.error('스케줄 조회 실패:', error);
+    monthEvents = {};
+    renderCalendarGrid();
+    return;
+  }
+
+  const grouped = {};
+  (data || []).forEach(r => {
+    const effectiveUtc = r.Consultation_reservation_time || r.appointment_at;
+    if (!effectiveUtc) return;
+    const kst = toKST(effectiveUtc);
+    const day = kst.getUTCDate();
+    const isDone = !!(r.Consultation_start_time && r.Consultation_end_time);
+    const item = {
+      time: fmtHHMM(kst),
+      name: r.client_name || '이름없음',
+      phone: r.client_phone || '-',
+      session: r.Counseling_session ? `${r.Counseling_session}회기` : '접수',
+      status: isDone ? 'done' : 'notdone',
+      label: isDone ? '완료' : '미실시',
+      sortKey: kst.getTime()
     };
+    if (!grouped[day]) grouped[day] = [];
+    grouped[day].push(item);
+  });
+  Object.keys(grouped).forEach(d => grouped[d].sort((a,b) => a.sortKey - b.sortKey));
 
-    const weekdayNames = ['일','월','화','수','목','금','토'];
+  monthEvents = grouped;
+  renderCalendarGrid();
+}
 
-    function badgeStyle(status){
-      if(status === 'done') return 'background:#dcfce7;color:#15803d;';
-      if(status === 'notdone') return 'background:#f1f5f9;color:#475569;';
-      if(status === 'pending') return 'background:#ffedd5;color:#c2410c;';
-      return 'background:transparent;border:1px solid var(--line);color:var(--muted);';
-    }
+function openDay(day){
+  if (!isLoggedIn()) { openLoginModal(); return; }
+  selectedDay = day;
+  renderCalendarGrid();
 
-    function openDay(day){
-      if (!isLoggedIn()) { openLoginModal(); return; }
+  const d = new Date(Date.UTC(viewYear, viewMonth - 1, day));
+  const weekdayNames = ['일','월','화','수','목','금','토'];
+  const wd = weekdayNames[d.getUTCDay()];
+  document.getElementById('sheetTitle').textContent = `${viewMonth}월 ${day}일 (${wd}) 예약`;
 
-      document.querySelectorAll('.cell.selected').forEach(c => c.classList.remove('selected'));
-      const cell = document.querySelector('.cell[data-day="'+day+'"]');
-      if(cell) cell.classList.add('selected');
+  const items = monthEvents[day] || [];
+  const listEl = document.getElementById('sheetList');
+  document.getElementById('sheetCount').textContent = '총 ' + items.length + '건';
 
-      const d = new Date(2026, 6, day);
-      const wd = weekdayNames[d.getDay()];
-      document.getElementById('sheetTitle').textContent = '7월 ' + day + '일 (' + wd + ') 예약';
+  if (items.length === 0) {
+    listEl.innerHTML = '<div class="sEmpty">등록된 예약이 없습니다</div>';
+  } else {
+    listEl.innerHTML = items.map(it => `
+      <div class="sItem">
+        <div class="sTime">${it.time}</div>
+        <div class="sInfo">
+          <div class="name">${it.name} <span class="sBadge" style="${badgeStyle(it.status)}">${it.label} · ${it.session}</span></div>
+          <div class="sub">${it.phone}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+  document.getElementById('sheet').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
 
-      const items = scheduleData[day] || [];
-      const listEl = document.getElementById('sheetList');
-      document.getElementById('sheetCount').textContent = '총 ' + items.length + '건';
+function closeSheet(){
+  document.getElementById('sheet').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
 
-      if(items.length === 0){
-        listEl.innerHTML = '<div class="sEmpty">등록된 예약이 없습니다</div>';
-      } else {
-        listEl.innerHTML = items.map(it => `
-          <div class="sItem">
-            <div class="sTime">${it.time}</div>
-            <div class="sInfo">
-              <div class="name">${it.name} <span class="sBadge" style="${badgeStyle(it.status)}">${it.label} · ${it.session}</span></div>
-              <div class="sub">${it.phone} · ${it.type}</div>
-            </div>
-          </div>
-        `).join('');
-      }
+// ===================== 월 이동 =====================
+function goToMonth(year, month){
+  if (month < 1) { year -= 1; month = 12; }
+  if (month > 12) { year += 1; month = 1; }
+  viewYear = year; viewMonth = month;
+  selectedDay = null;
+  renderCalendarGrid();
+  loadMonth(viewYear, viewMonth);
+}
 
-      document.getElementById('sheet').classList.add('open');
-      document.getElementById('overlay').classList.add('open');
-    }
+document.getElementById('prevMonthBtn').addEventListener('click', () => goToMonth(viewYear, viewMonth - 1));
+document.getElementById('nextMonthBtn').addEventListener('click', () => goToMonth(viewYear, viewMonth + 1));
+document.getElementById('todayBtn').addEventListener('click', () => goToMonth(nowK.getUTCFullYear(), nowK.getUTCMonth() + 1));
 
-    function closeSheet(){
-      document.getElementById('sheet').classList.remove('open');
-      document.getElementById('overlay').classList.remove('open');
-    }
-  </script>
- </body>
+renderCalendarGrid(); // 로그인 전에도 달력 뼈대는 즉시 표시
+initAuth();
+</script>
+</body>
 </html>
