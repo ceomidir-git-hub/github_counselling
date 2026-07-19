@@ -170,9 +170,28 @@ button,input,select,textarea{font:inherit}
     margin-bottom:10px;
     box-shadow:0 8px 19px rgba(15,23,42,.06)}
 
-.weekdayRow{
+.scrollHint{
+    text-align:center;
+    font-size:10px;
+    color:var(--muted);
+    font-weight:700;
+    margin-bottom:6px}
+
+.calScroll{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:2px}
+.calScroll::-webkit-scrollbar{height:5px}
+.calScroll::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px}
+
+.calGrid{
     display:grid;
-    grid-template-columns:repeat(6,1fr);
+    grid-template-columns:repeat(6, minmax(66px, max-content));
+    grid-auto-rows:minmax(50px, auto);
+    gap:3px;
+    align-items:stretch}
+
+.wd{
     text-align:center;
     font-size:10.5px;
     color:var(--muted);
@@ -180,14 +199,7 @@ button,input,select,textarea{font:inherit}
     padding-bottom:6px;
     border-bottom:1px solid var(--line);
     margin-bottom:4px}
-.weekdayRow span:last-child{color:var(--blue2)}
-
-.calGrid{
-    display:grid;
-    grid-template-columns:repeat(6,1fr);
-    grid-auto-rows:minmax(50px, auto);
-    gap:3px;
-    align-items:stretch}
+.wd.sat{color:var(--blue2)}
 
 .cell{
     border:1px solid var(--line);
@@ -204,12 +216,11 @@ button,input,select,textarea{font:inherit}
 .evt{
     display:flex; align-items:center; gap:3px;
     margin-top:2px; font-size:8.5px; color:var(--ink);
-    white-space:nowrap; overflow:hidden}
+    white-space:nowrap}
 .evt::before{content:''; width:5px; height:5px; border-radius:50%; background:var(--line); flex-shrink:0}
 .evt.done::before{background:var(--green)}
 .evt.notdone::before{background:var(--muted)}
 .evt.pending::before{background:var(--orange)}
-.evtName{overflow:hidden; text-overflow:ellipsis}
 
 .legend{
     display:flex; flex-wrap:wrap; gap:10px;
@@ -368,10 +379,15 @@ button,input,select,textarea{font:inherit}
         <span><i style="background:var(--line);border:1px solid var(--muted)"></i>예정</span>
         <span><i style="background:var(--orange)"></i>접수대기</span>
        </div>
-       <div class="weekdayRow">
-        <span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
-       </div>
+       <div class="scrollHint">← 옆으로 밀면 전체 요일을 볼 수 있어요 →</div>
+       <div class="calScroll">
        <div class="calGrid">
+        <div class="wd">월</div>
+        <div class="wd">화</div>
+        <div class="wd">수</div>
+        <div class="wd">목</div>
+        <div class="wd">금</div>
+        <div class="wd sat">토</div>
         <div class="cell other"><div class="dnum">29</div></div>
         <div class="cell other"><div class="dnum">30</div></div>
         <div class="cell" data-day="1" onclick="openDay(1)"><div class="dnum">1</div><div class="evt done"><span class="evtName">10:00 김민서</span></div></div>
@@ -412,6 +428,7 @@ button,input,select,textarea{font:inherit}
         <div class="cell" data-day="30" onclick="openDay(30)"><div class="dnum">30</div></div>
         <div class="cell" data-day="31" onclick="openDay(31)"><div class="dnum">31</div></div>
         <div class="cell other"><div class="dnum">1</div></div>
+       </div>
        </div>
       </div>
 
