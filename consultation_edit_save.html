@@ -79,6 +79,10 @@
   .grid.session-row {
     grid-template-columns: 0.7fr 1.3fr 1.3fr 1.3fr 0.7fr;
   }
+  .grid.next-session-row {
+    grid-template-columns: 0.7fr 1.3fr;
+    max-width: 480px;
+  }
   .field { display: flex; flex-direction: column; }
   .field.full { grid-column: 1 / -1; }
   label {
@@ -331,9 +335,11 @@
     .grid.cols-3,
     .grid.cols-4,
     .grid.session-row,
+    .grid.next-session-row,
     .test-tools-row {
       grid-template-columns: 1fr;
     }
+    .grid.next-session-row { max-width: 100%; }
     .container { padding: 22px 20px 28px; }
   }
 </style>
@@ -478,6 +484,37 @@
           <label for="counselDetail">상세 상담내용</label>
           <textarea id="counselDetail" maxlength="1000" placeholder="상담에 대해 자세히 작성해주세요."></textarea>
           <div class="char-count"><span id="charCount">0</span> / 1000</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 차기 회기 정보 -->
+    <div class="section">
+      <h2><i class="ti ti-calendar-plus" aria-hidden="true"></i>4. 차기 회기 정보</h2>
+      <div class="grid next-session-row">
+        <div class="field">
+          <label for="nextSessionNo">차기 회기</label>
+          <select id="nextSessionNo">
+            <option value="">선택</option>
+            <option value="1">1회기</option>
+            <option value="2">2회기</option>
+            <option value="3">3회기</option>
+            <option value="4">4회기</option>
+            <option value="5">5회기</option>
+            <option value="6">6회기</option>
+            <option value="7">7회기</option>
+            <option value="8">8회기</option>
+            <option value="9">9회기</option>
+            <option value="10">10회기</option>
+          </select>
+        </div>
+        <div class="field" id="nextResField">
+          <label>차기 예약일</label>
+          <div class="dtRow">
+            <input type="date" id="nextReservationDate">
+            <select id="nextReservationTime"><option value="" selected disabled>시간</option></select>
+          </div>
+          <div class="dtPreview" id="nextReservationPreview">-</div>
         </div>
       </div>
     </div>
@@ -715,10 +752,12 @@
   buildTimeOptions(document.getElementById("reservationTime"), 0, 23, 10);
   buildTimeOptions(document.getElementById("startTime"), 0, 23, 10);
   buildTimeOptions(document.getElementById("endTime"), 0, 23, 10);
+  buildTimeOptions(document.getElementById("nextReservationTime"), 0, 23, 10);
 
   const reservationPair = setupDateTimePair("reservationDate", "reservationTime", "reservationPreview");
   const startPair = setupDateTimePair("startDate", "startTime", "startPreview");
   const endPair = setupDateTimePair("endDate", "endTime", "endPreview");
+  const nextReservationPair = setupDateTimePair("nextReservationDate", "nextReservationTime", "nextReservationPreview");
 
   // ===== 5) 실시일 시작/종료 -> 상담시간 자동 계산 (분 단위) =====
   const durationInput = document.getElementById('duration');
@@ -895,6 +934,9 @@
     counselDetail.value = record.Details_of_consultation || '';
     charCount.textContent = counselDetail.value.length;
 
+    document.getElementById("nextSessionNo").value = record.next_session_no ? String(record.next_session_no) : '';
+    nextReservationPair.setFromISO(record.next_reservation_at);
+
     ["job","gender","consultationTarget","consultationTopic"].forEach(id => markInvalid(document.getElementById(id).parentElement, false));
     markInvalid(document.getElementById("birthDate").parentElement, false);
   }
@@ -920,6 +962,7 @@
     const testTool2 = document.getElementById("testTool2").value;
     const testTool3 = document.getElementById("testTool3").value;
     const testTool4 = document.getElementById("testTool4").value;
+    const nextSessionNo = document.getElementById("nextSessionNo").value;
 
     const consultationTarget = document.getElementById("consultationTarget").value;
     const consultationTopic = document.getElementById("consultationTopic").value;
@@ -978,6 +1021,8 @@
       Inspection_tool2: testTool2 || null,
       Inspection_tool3: testTool3 || null,
       Inspection_tool4: testTool4 || null,
+      next_session_no: nextSessionNo ? parseInt(nextSessionNo, 10) : null,
+      next_reservation_at: nextReservationPair.getISO(),
       counsel_client_type: consultationTarget,
       counsel_topic: consultationTopic,
       Details_of_consultation: counselDetailVal || null
@@ -1011,10 +1056,10 @@
       charCount.textContent = "0";
       ageInput.value = "";
       durationInput.value = "";
-      [reservationPair, startPair, endPair].forEach(p => p.updatePreview());
-      ["job","gender","birthDate","address","sessionNo","testTool1","testTool2","testTool3","testTool4","consultationTarget","consultationTopic"]
+      [reservationPair, startPair, endPair, nextReservationPair].forEach(p => p.updatePreview());
+      ["job","gender","birthDate","address","sessionNo","testTool1","testTool2","testTool3","testTool4","consultationTarget","consultationTopic","nextSessionNo"]
         .forEach(id => markInvalid(document.getElementById(id).parentElement, false));
-      ["reservationField","startField","endField"]
+      ["reservationField","startField","endField","nextResField"]
         .forEach(id => markInvalid(document.getElementById(id), false));
     }, 0);
   });
