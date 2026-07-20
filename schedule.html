@@ -64,6 +64,7 @@ button,input,select,textarea{font:inherit}
 .evt::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--line);flex-shrink:0}
 .evt.done::before{background:var(--green)}
 .evt.notdone::before{background:var(--muted)}
+.evt.next::before{background:var(--violet)}
 .legend{display:flex;flex-wrap:wrap;gap:10px;font-size:10.5px;color:var(--muted);font-weight:800;padding:0 2px 4px}
 .legend span{display:inline-flex;align-items:center;gap:4px}
 .legend i{width:6px;height:6px;border-radius:50%;display:inline-block}
@@ -148,6 +149,7 @@ button,input,select,textarea{font:inherit}
      <div class="legend">
       <span><i style="background:var(--green)"></i>완료</span>
       <span><i style="background:var(--muted)"></i>미실시</span>
+      <span><i style="background:var(--violet)"></i>차기 예약</span>
      </div>
      <div class="scrollHint">← 옆으로 밀면 전체 요일을 볼 수 있어요 →</div>
      <div class="calScroll">
@@ -334,18 +336,23 @@ function fmtHHMM(kstDate){
   const m = String(kstDate.getUTCMinutes()).padStart(2,'0');
   return `${h}:${m}`;
 }
+// 특정 UTC ISO 문자열이 주어진 KST 월 범위 [utcStart, utcEndExclusive) 안에 드는지 확인
+function isInRange(utcIsoString, utcStart, utcEndExclusive){
+  if (!utcIsoString) return false;
+  const t = new Date(utcIsoString).getTime();
+  return t >= new Date(utcStart).getTime() && t < new Date(utcEndExclusive).getTime();
+}
 
 // ===================== 달력 상태 =====================
 const nowK = kstNow();
 let viewYear = nowK.getUTCFullYear();
 let viewMonth = nowK.getUTCMonth() + 1; // 1-12
-let monthEvents = {}; // { day: [ {time,name,phone,session,status,label} ] }
+let monthEvents = {}; // { day: [ {time,name,phone,session,status,label,type} ] }
 let selectedDay = null;
 
 // [수정] 달력은 일~토 중 "일요일 칸"을 표시하지 않는 6열(월~토) 구조입니다.
 // 이전 버전은 이번 달/다음 달 날짜를 채울 때 일요일도 그대로 한 칸으로 채워 넣어서,
 // 일요일이 지나갈 때마다 이후 모든 날짜가 한 칸씩 밀리는 누적 버그가 있었습니다.
-// (예: 7월은 일요일이 3번 있어 7/20이 실제로는 월요일인데 화면엔 3칸 밀려 목요일 자리에 표시됨)
 // 수정: 이번 달/다음 달 날짜를 채울 때 요일이 일요일(0)이면 해당 날짜는 칸 자체를 만들지 않고 건너뜁니다.
 function buildCalendarCells(year, month){
   const firstDay = new Date(Date.UTC(year, month - 1, 1));
@@ -355,23 +362,19 @@ function buildCalendarCells(year, month){
   const prevDaysInMonth = new Date(Date.UTC(year, month - 1, 0)).getUTCDate();
   const cells = [];
 
-  // 1) 이전 달 padding: 1일이 속한 주의 월~토 중 이전 달에 해당하는 날짜만 채움
-  //    (이 구간은 항상 연속된 월~토 6일 이내이므로 일요일이 섞일 수 없어 별도 스킵 불필요)
   for (let i = mondayIndex - 1; i >= 0; i--) {
     cells.push({ day: prevDaysInMonth - i, other: true, key: 'p' + (prevDaysInMonth - i) });
   }
 
-  // 2) 이번 달 날짜: 요일이 일요일(0)이면 칸을 만들지 않고 건너뜀
   for (let d = 1; d <= daysInMonth; d++) {
     const wd = new Date(Date.UTC(year, month - 1, d)).getUTCDay();
     if (wd === 0) continue; // 일요일 스킵
     cells.push({ day: d, other: false, key: 'c' + d });
   }
 
-  // 3) 다음 달 padding: 전체 칸 수가 6의 배수가 될 때까지 채우되, 일요일은 스킵
   let nextD = 1;
   while (cells.length % 6 !== 0) {
-    const wd = new Date(Date.UTC(year, month, nextD)).getUTCDay(); // month(1-based)를 그대로 넣으면 0-based 다음 달
+    const wd = new Date(Date.UTC(year, month, nextD)).getUTCDay();
     if (wd !== 0) {
       cells.push({ day: nextD, other: true, key: 'n' + nextD });
     }
@@ -383,13 +386,13 @@ function buildCalendarCells(year, month){
 
 function badgeStyle(status){
   if (status === 'done') return 'background:#dcfce7;color:#15803d;';
+  if (status === 'next') return 'background:#ede9fe;color:#6d28d9;';
   return 'background:#f1f5f9;color:#475569;';
 }
 
 function renderCalendarGrid(){
   document.getElementById('monthLabel').textContent = `${viewYear}년 ${viewMonth}월`;
   const grid = document.getElementById('calGrid');
-  // 요일 헤더 5개 남기고 나머지 제거
   while (grid.children.length > 6) grid.removeChild(grid.lastChild);
 
   const cells = buildCalendarCells(viewYear, viewMonth);
@@ -413,7 +416,8 @@ function renderCalendarGrid(){
     if (!c.other && monthEvents[c.day]) {
       monthEvents[c.day].forEach(ev => {
         const evtDiv = document.createElement('div');
-        evtDiv.className = 'evt ' + (ev.status === 'done' ? 'done' : 'notdone');
+        const dotClass = ev.status === 'done' ? 'done' : (ev.status === 'next' ? 'next' : 'notdone');
+        evtDiv.className = 'evt ' + dotClass;
         const span = document.createElement('span');
         span.className = 'evtName';
         span.textContent = `${ev.time} ${ev.name}`;
@@ -432,12 +436,16 @@ async function loadMonth(year, month){
 
   const { utcStart, utcEndExclusive } = kstMonthRangeToUTC(year, month);
 
-  // 표시 날짜 우선순위: Consultation_reservation_time 있으면 그 값, 없으면 appointment_at
-  const orFilter = `and(Consultation_reservation_time.gte.${utcStart},Consultation_reservation_time.lt.${utcEndExclusive}),and(Consultation_reservation_time.is.null,appointment_at.gte.${utcStart},appointment_at.lt.${utcEndExclusive})`;
+  // 표시 대상 3가지 날짜 컬럼 중 하나라도 이번 달 범위에 걸리면 조회
+  // (같은 레코드라도 상담 예약일과 차기 예약일이 서로 다른 달에 있을 수 있으므로 각각 독립 조건으로 OR)
+  const orFilter =
+    `and(Consultation_reservation_time.gte.${utcStart},Consultation_reservation_time.lt.${utcEndExclusive}),` +
+    `and(Consultation_reservation_time.is.null,appointment_at.gte.${utcStart},appointment_at.lt.${utcEndExclusive}),` +
+    `and(next_reservation_at.gte.${utcStart},next_reservation_at.lt.${utcEndExclusive})`;
 
   const { data, error } = await sb
     .from('db_sina_counsel')
-    .select('id, client_name, client_phone, Counseling_session, appointment_at, Consultation_reservation_time, Consultation_start_time, Consultation_end_time')
+    .select('id, client_name, client_phone, Counseling_session, appointment_at, Consultation_reservation_time, Consultation_start_time, Consultation_end_time, next_session_no, next_reservation_at')
     .or(orFilter);
 
   loadingNote.style.display = 'none';
@@ -450,23 +458,41 @@ async function loadMonth(year, month){
   }
 
   const grouped = {};
-  (data || []).forEach(r => {
-    const effectiveUtc = r.Consultation_reservation_time || r.appointment_at;
-    if (!effectiveUtc) return;
-    const kst = toKST(effectiveUtc);
-    const day = kst.getUTCDate();
-    const isDone = !!(r.Consultation_start_time && r.Consultation_end_time);
-    const item = {
-      time: fmtHHMM(kst),
-      name: r.client_name || '이름없음',
-      phone: r.client_phone || '-',
-      session: r.Counseling_session ? `${r.Counseling_session}회기` : '접수',
-      status: isDone ? 'done' : 'notdone',
-      label: isDone ? '완료' : '미실시',
-      sortKey: kst.getTime()
-    };
+  function pushEvent(day, item){
     if (!grouped[day]) grouped[day] = [];
     grouped[day].push(item);
+  }
+
+  (data || []).forEach(r => {
+    // 1) 상담 예약 / 접수 예약 (기존 로직, 우선순위: Consultation_reservation_time > appointment_at)
+    const sessionUtc = r.Consultation_reservation_time || r.appointment_at;
+    if (sessionUtc && isInRange(sessionUtc, utcStart, utcEndExclusive)) {
+      const kst = toKST(sessionUtc);
+      const isDone = !!(r.Consultation_start_time && r.Consultation_end_time);
+      pushEvent(kst.getUTCDate(), {
+        time: fmtHHMM(kst),
+        name: r.client_name || '이름없음',
+        phone: r.client_phone || '-',
+        session: r.Counseling_session ? `${r.Counseling_session}회기` : '접수',
+        status: isDone ? 'done' : 'notdone',
+        label: isDone ? '완료' : '미실시',
+        sortKey: kst.getTime()
+      });
+    }
+
+    // 2) 차기 회기 예약 (next_reservation_at) - 별도 항목으로 표시
+    if (r.next_reservation_at && isInRange(r.next_reservation_at, utcStart, utcEndExclusive)) {
+      const kstNext = toKST(r.next_reservation_at);
+      pushEvent(kstNext.getUTCDate(), {
+        time: fmtHHMM(kstNext),
+        name: r.client_name || '이름없음',
+        phone: r.client_phone || '-',
+        session: r.next_session_no ? `${r.next_session_no}회기` : '차기',
+        status: 'next',
+        label: '차기',
+        sortKey: kstNext.getTime()
+      });
+    }
   });
   Object.keys(grouped).forEach(d => grouped[d].sort((a,b) => a.sortKey - b.sortKey));
 
@@ -524,7 +550,7 @@ document.getElementById('prevMonthBtn').addEventListener('click', () => goToMont
 document.getElementById('nextMonthBtn').addEventListener('click', () => goToMonth(viewYear, viewMonth + 1));
 document.getElementById('todayBtn').addEventListener('click', () => goToMonth(nowK.getUTCFullYear(), nowK.getUTCMonth() + 1));
 
-renderCalendarGrid(); // 로그인 전에도 달력 뼈대는 즉시 표시
+renderCalendarGrid();
 initAuth();
 </script>
 </body>
