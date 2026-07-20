@@ -1236,11 +1236,14 @@ button,input,select,textarea{
     // ===== 오늘 요약 카드: 당월전체 / 당월실적 / 오늘건수 / 당월잔존 =====
     // 모든 판단은 한국시간(KST, UTC+9) 기준으로 계산한다.
     //
-    // [정의]
-    //  - 당월전체: 이번 달에 예약(appointment_at)이 잡혀 있는 전체 건수 (했든 안 했든 전부)
-    //  - 당월실적: 당월전체 중 실제로 상담을 진행한 건수 (Consultation_start_time 기록 존재)
-    //  - 오늘건수: 실제로 상담을 진행한 날짜(실시일)가 오늘인 건수
-    //  - 당월잔존: 당월전체 - 당월실적 (아직 상담을 해야 하는 건수)
+    // [정의] 한 행(row) 안의 접수/실시/예약을 각각 1건으로 세는 "이벤트 기반" 집계.
+    //  · 접수 = received_at 가 당월
+    //  · 실시 = Consultation_start_time 가 당월
+    //  · 예약 = next_reservation_at 가 당월 (아직 남은 차기 예약)
+    //  - 당월전체 : 접수 + 실시 + 예약
+    //  - 당월실적 : 접수 + 실시   (이미 완료된 활동)
+    //  - 오늘건수 : 실시 중 실시일이 오늘인 건수
+    //  - 당월잔존 : 예약          (= 당월전체 - 당월실적)
     const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
     // DB의 timestamptz(UTC) 문자열 → KST로 보정된 Date 객체로 변환
@@ -1292,7 +1295,7 @@ button,input,select,textarea{
       try {
         const { data, error } = await sb
           .from('db_sina_counsel')
-          .select('appointment_at, Consultation_start_time');
+          .select('received_at, Consultation_start_time, next_reservation_at');
 
         if (error) throw error;
 
@@ -1300,39 +1303,45 @@ button,input,select,textarea{
         const thisMonthKey = kstYearMonthKey(nowKst);
         const todayKey = kstDateKey(nowKst);
 
-        let total = 0;   // 당월전체: 이번 달 예약 전체
-        let done = 0;    // 당월실적: 이번 달 예약 중 실제 상담 진행(실시 기록 존재)
-        let today = 0;   // 오늘건수: 실시일이 오늘인 건수
+        // ---- 이벤트 기반 집계 (한 행 안의 접수/실시/예약을 각각 1건으로 카운트) ----
+        //  접수  : received_at 가 당월(KST)
+        //  실시  : Consultation_start_time 가 당월(KST)
+        //  예약  : next_reservation_at 가 당월(KST)  → 아직 남은 차기 예약
+        let reception = 0;   // 접수 건수 (당월)
+        let session = 0;     // 실시 건수 (당월)
+        let reservation = 0; // 예약(차기) 건수 (당월)
+        let today = 0;       // 오늘건수: 실시일이 오늘인 건수
 
         (data || []).forEach(row => {
-          // 실제로 상담을 진행했는지: 실시 시작 시각이 기록되어 있으면 "실적"으로 판단
-          const hasSession = !!row.Consultation_start_time;
-
-          const apptKst = toKstDate(row.appointment_at);
-          if (apptKst) {
-            const apptMonthKey = kstYearMonthKey(apptKst);
-
-            // 당월전체: 이번 달에 예약된 전체 건수
-            if (apptMonthKey === thisMonthKey) {
-              total += 1;
-
-              // 당월실적: 그중 실제로 진행한 건수
-              if (hasSession) {
-                done += 1;
-              }
-            }
+          // 접수: 접수일(received_at)이 당월이면 +1
+          const recKst = toKstDate(row.received_at);
+          if (recKst && kstYearMonthKey(recKst) === thisMonthKey) {
+            reception += 1;
           }
 
-          // 오늘건수: 실시일(실제 상담한 날짜)이 오늘인 건수
-          if (hasSession) {
-            const startKst = toKstDate(row.Consultation_start_time);
-            if (startKst && kstDateKey(startKst) === todayKey) {
+          // 실시: 상담 시작일(Consultation_start_time)이 당월이면 +1
+          const startKst = toKstDate(row.Consultation_start_time);
+          if (startKst && kstYearMonthKey(startKst) === thisMonthKey) {
+            session += 1;
+            // 오늘건수: 실시일이 오늘인 경우
+            if (kstDateKey(startKst) === todayKey) {
               today += 1;
             }
           }
+
+          // 예약: 차기 예약일(next_reservation_at)이 당월이면 +1
+          const nextKst = toKstDate(row.next_reservation_at);
+          if (nextKst && kstYearMonthKey(nextKst) === thisMonthKey) {
+            reservation += 1;
+          }
         });
 
-        const remain = total - done; // 당월잔존: 아직 상담을 해야 하는 건수
+        // 당월전체 = 접수 + 실시 + 예약
+        const total = reception + session + reservation;
+        // 당월실적 = 접수 + 실시 (이미 완료된 활동)
+        const done = reception + session;
+        // 당월잔존 = 예약 (앞으로 해야 할 차기 예약)
+        const remain = reservation;
 
         elTotal.textContent = total;
         elDone.textContent = done;
