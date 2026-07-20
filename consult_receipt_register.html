@@ -216,7 +216,7 @@
 
     .actions {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 8px;
       margin-top: 18px;
       padding-bottom: 6px;
@@ -282,11 +282,7 @@
       box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.10);
     }
 
-    /* ===== 조회(4. 접수 상담 조회) 섹션 전용 스타일 ===== */
-    .lookup-btn-row {
-      grid-column: 1 / -1;
-    }
-
+    /* ===== 조회 시 후보(동명이인 연락처 / 여러 접수건) 선택 리스트 ===== */
     .lookup-item {
       border: 1px solid var(--line);
       border-radius: 10px;
@@ -322,50 +318,21 @@
       margin-bottom: 8px;
     }
 
-    .back-link {
-      display: inline-flex;
+    /* 조회 결과를 불러와 수정 중인 상태임을 알려주는 배지 */
+    .edit-mode-badge {
+      display: none;
       align-items: center;
-      gap: 4px;
-      margin-bottom: 12px;
-      font-size: 13px;
-      font-weight: 850;
-      color: var(--blue);
-      cursor: pointer;
-    }
-
-    .detail-grid { display: grid; gap: 0; }
-
-    .detail-row {
-      display: grid;
-      grid-template-columns: 96px 1fr;
-      gap: 8px;
-      font-size: 13px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--line-soft);
-    }
-
-    .detail-row:last-child { border-bottom: none; }
-
-    .detail-row .k { font-weight: 850; color: #111827; }
-    .detail-row .v { color: #334155; word-break: break-word; }
-
-    .detail-label {
+      gap: 6px;
       font-size: 12px;
       font-weight: 850;
-      color: var(--muted);
-      margin: 14px 0 6px;
+      color: #92400e;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
     }
-
-    .detail-textarea {
-      white-space: pre-wrap;
-      font-size: 13px;
-      color: #334155;
-      background: #f8fafc;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 10px;
-      line-height: 1.5;
-    }
+    .edit-mode-badge.show { display: flex; }
 
     @media (max-width: 480px) {
       .page { padding: 0; background: #fff; }
@@ -384,7 +351,6 @@
 
     @media (max-width: 360px) {
       .form-row { grid-template-columns: 1fr; gap: 5px; }
-      .actions { grid-template-columns: repeat(2, 1fr); }
       .btn { font-size: 13px; }
       .hint { grid-column: 1 / -1; }
     }
@@ -397,7 +363,7 @@
       .section { padding: 18px 22px; }
       .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; row-gap: 12px; }
       .form-row.full { grid-column: 1 / -1; }
-      .actions { max-width: 620px; margin-left: auto; margin-right: auto; }
+      .actions { grid-template-columns: repeat(4, 1fr); max-width: 720px; margin-left: auto; margin-right: auto; }
     }
 
     @media (min-width: 1100px) {
@@ -423,7 +389,11 @@
         <div class="container">
           <h1 class="page-title">접수 상담 등록</h1>
 
+          <div class="edit-mode-badge" id="editModeBadge">✎ 조회된 기존 접수 데이터를 수정 중입니다. 저장을 누르면 해당 기록이 업데이트됩니다.</div>
+
           <div class="statusMsg" id="statusMsg"></div>
+          <div class="statusMsg" id="lookupMsg"></div>
+          <div id="lookupSelectionArea" style="display:none; margin-bottom:12px;"></div>
 
           <form id="consultForm">
             <section class="section">
@@ -483,6 +453,7 @@
 
             <section class="section">
               <h2 class="section-title">2. 내담자 정보</h2>
+              <div class="hint" style="grid-column:1/-1; margin-bottom:10px;">💡 내담자명(+연락처)을 입력한 뒤 하단의 <b>🔍 조회</b> 버튼을 누르면 기존 접수 기록을 이 폼으로 불러올 수 있습니다.</div>
 
               <div class="form-grid">
                 <div class="form-row">
@@ -499,7 +470,7 @@
 
                 <div class="form-row">
                   <label for="clientPhone">연락처</label>
-                  <input id="clientPhone" class="field" type="tel" placeholder="010-0000-0000" maxlength="13" inputmode="numeric" />
+                  <input id="clientPhone" class="field" type="tel" placeholder="010-0000-0000 (조회 시 선택 입력)" maxlength="13" inputmode="numeric" />
                 </div>
 
                 <div class="form-row">
@@ -546,36 +517,11 @@
 
             <div class="actions">
               <button type="submit" class="btn primary" id="submitBtn">▣ 등록</button>
-              <button type="reset" class="btn" id="resetBtn">↻ 초기화</button>
+              <button type="button" class="btn primary" id="lookupSaveBtn">🔍 조회</button>
+              <button type="button" class="btn" id="resetBtn">↻ 초기화</button>
               <a href="index.html" class="btn">⌂ 메인화면</a>
             </div>
           </form>
-
-          <!-- ===== 4. 접수 상담 조회 (등록 폼과 별개, 내담자명+연락처 정확히 일치하는 기록 검색) ===== -->
-          <section class="section">
-            <h2 class="section-title">4. 접수 상담 조회</h2>
-
-            <div class="statusMsg" id="lookupMsg"></div>
-
-            <div class="form-grid">
-              <div class="form-row">
-                <label for="lookupName">내담자명</label>
-                <input id="lookupName" class="field" type="text" placeholder="내담자명을 입력하세요" />
-              </div>
-
-              <div class="form-row">
-                <label for="lookupPhone">연락처</label>
-                <input id="lookupPhone" class="field" type="tel" placeholder="010-0000-0000" maxlength="13" inputmode="numeric" />
-              </div>
-
-              <div class="form-row full lookup-btn-row">
-                <button type="button" class="btn primary" id="lookupBtn" style="width:100%;">🔍 조회</button>
-              </div>
-            </div>
-
-            <div id="lookupResultList" style="display:none; margin-top:14px;"></div>
-            <div id="lookupDetail" style="display:none; margin-top:14px;"></div>
-          </section>
         </div>
       </div>
     </main>
@@ -586,6 +532,12 @@
   <script>
     // ===== 0) UI 초기화는 Supabase 연결 성공 여부와 무관하게 항상 먼저 실행 =====
     const DAY_KR = ["일", "월", "화", "수", "목", "금", "토"];
+
+    // ===== 0-1) 조회/등록 모드 상태 =====
+    // mode: "new"  -> 새 접수 등록 모드 (기본)
+    // mode: "loaded" -> 조회로 기존 기록을 불러와 수정 중인 모드
+    let mode = "new";
+    let loadedRecordId = null;
 
     // 1) 접수일시: 날짜+시간 드롭다운 (기본값 = 현재 KST 시각, 수정 가능)
     const receivedDateEl = document.getElementById("receivedDate");
@@ -746,6 +698,35 @@
       return new Date(`${dateVal}T${timeVal}:00+09:00`).toISOString();
     }
 
+    // 4-1) 저장된 ISO(UTC) 시각을 KST 기준 {date, time} 문자열로 변환 (조회 결과를 폼에 채울 때 사용)
+    function isoToKSTParts(iso) {
+      if (!iso) return null;
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return null;
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Seoul",
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hour12: false
+      }).formatToParts(d);
+      const map = {};
+      parts.forEach(p => map[p.type] = p.value);
+      return { date: `${map.year}-${map.month}-${map.day}`, time: `${map.hour}:${map.minute}` };
+    }
+
+    // 드롭다운에 없는 시간값(과거 데이터 등)이어도 항상 정확히 선택되도록 옵션을 임시 추가
+    function setTimeSelectValue(selectEl, timeStr) {
+      if (!timeStr) return;
+      let opt = Array.from(selectEl.options).find(o => o.value === timeStr);
+      if (!opt) {
+        const ampm = parseInt(timeStr.split(":")[0], 10) < 12 ? "오전" : "오후";
+        opt = document.createElement("option");
+        opt.value = timeStr;
+        opt.textContent = `${timeStr} (${ampm})`;
+        selectEl.appendChild(opt);
+      }
+      selectEl.value = timeStr;
+    }
+
     // 5) 상세 상담내용 글자수 카운터
     const details = document.getElementById("details");
     const detailsCounter = document.getElementById("detailsCounter");
@@ -753,7 +734,7 @@
       detailsCounter.textContent = `${details.value.length} / 1000`;
     });
 
-    // 6) 상태 메시지 표시
+    // 6) 상태 메시지 표시 (등록/저장 결과)
     const statusMsgEl = document.getElementById("statusMsg");
     function showStatus(type, message) {
       statusMsgEl.className = "statusMsg show " + type;
@@ -765,22 +746,93 @@
       statusMsgEl.textContent = "";
     }
 
+    // 6-1) 조회 관련 메시지 표시 (등록/저장 메시지와 별도)
+    const lookupMsgEl = document.getElementById("lookupMsg");
+    function showLookupMsg(type, message) {
+      lookupMsgEl.className = "statusMsg show " + type;
+      lookupMsgEl.textContent = message;
+      lookupMsgEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    function hideLookupMsg() {
+      lookupMsgEl.className = "statusMsg";
+      lookupMsgEl.textContent = "";
+    }
+
     function markInvalid(el, invalid) {
       if (invalid) el.classList.add("invalid");
       else el.classList.remove("invalid");
     }
+    function clearAllInvalid() {
+      document.querySelectorAll(".invalid").forEach((el) => el.classList.remove("invalid"));
+    }
 
-    // ===== 6-1) 등록 버튼 잠금 처리 (화면에는 안내를 표시하지 않는 조용한 안전장치) =====
+    function escapeHTML(str) {
+      if (str === null || str === undefined || str === "") return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function formatKST(iso) {
+      const parts = isoToKSTParts(iso);
+      if (!parts) return "-";
+      const dObj = new Date(parts.date + "T00:00:00");
+      const dayLabel = DAY_KR[dObj.getDay()];
+      const ampm = parseInt(parts.time.split(":")[0], 10) < 12 ? "오전" : "오후";
+      return `${parts.date}(${dayLabel}) ${parts.time}(${ampm})`;
+    }
+
+    // ===== 6-2) 버튼/모드 상태 관리 =====
     const submitBtn = document.getElementById("submitBtn");
+    const lookupSaveBtn = document.getElementById("lookupSaveBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const editModeBadgeEl = document.getElementById("editModeBadge");
+    const lookupSelectionAreaEl = document.getElementById("lookupSelectionArea");
     let currentSession = null;
 
     function isLoggedIn() {
       return !!currentSession;
     }
 
-    function updateLoginGate() {
-      submitBtn.disabled = !isLoggedIn();
+    function setMode(newMode) {
+      mode = newMode;
+      if (mode === "loaded") {
+        lookupSaveBtn.textContent = "💾 저장";
+        editModeBadgeEl.classList.add("show");
+      } else {
+        lookupSaveBtn.textContent = "🔍 조회";
+        editModeBadgeEl.classList.remove("show");
+        loadedRecordId = null;
+      }
+      updateLoginGate();
     }
+
+    function updateLoginGate() {
+      // 조회로 불러온 데이터를 수정 중일 때는 '등록'(신규 저장) 버튼은 항상 잠금
+      submitBtn.disabled = mode === "loaded" ? true : !isLoggedIn();
+      lookupSaveBtn.disabled = !isLoggedIn();
+    }
+
+    function resetFormToNewMode() {
+      form.reset();
+      detailsCounter.textContent = "0 / 1000";
+      reservationPreviewEl.textContent = "예약일과 시간을 선택하면 여기에 표시됩니다.";
+      setReceivedDefaultToNow();
+      clearAllInvalid();
+      hideLookupMsg();
+      lookupSelectionAreaEl.style.display = "none";
+      lookupSelectionAreaEl.innerHTML = "";
+      setMode("new");
+    }
+
+    resetBtn.addEventListener("click", () => {
+      if (mode === "loaded") {
+        const ok = window.confirm("입력 중인 내용이 모두 초기화됩니다. 계속하시겠습니까?");
+        if (!ok) return;
+      }
+      resetFormToNewMode();
+    });
 
     // ===== 7) Supabase 연결: 실패해도 위 UI 동작에는 영향 없도록 별도 처리 =====
     // index.html과 동일하게 sessionStorage를 세션 저장소로 지정해야
@@ -807,7 +859,7 @@
     const TABLE_NAME = "db_sina_counsel";
 
     // ===== 7-1) lookup 테이블(sex_codes, counsel_client_type, counsel_topic, job_codes)에서 옵션 동적 로딩 =====
-    // mapObj를 전달하면 code -> name 매핑도 함께 저장 (조회 상세화면에서 코드값을 이름으로 표시하기 위함)
+    // mapObj를 전달하면 code -> name 매핑도 함께 저장 (조회 결과 목록에 이름으로 표시하기 위함)
     const sexMap = {};
     const jobMap = {};
     const targetMap = {};
@@ -861,26 +913,10 @@
       });
     }
     initAuth();
+    setMode("new");
 
-    // ===== 8) 등록(제출) 처리 =====
-    const form = document.getElementById("consultForm");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      hideStatus();
-
-      if (!sb) {
-        showStatus("error", "저장 서버(Supabase) 연결에 실패했습니다. 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.");
-        return;
-      }
-
-      // 로그인 상태가 아니면 등록을 진행하지 않음 (버튼은 잠겨있지만 이중 방어)
-      if (!isLoggedIn()) {
-        showStatus("error", "로그인이 필요합니다. 메인화면에서 먼저 로그인해주세요.");
-        updateLoginGate();
-        return;
-      }
-
+    // ===== 8) 등록/저장 폼 값 수집 + 검증 (등록 · 조회 후 수정 저장 공통 사용) =====
+    function collectAndValidateFormData() {
       const receptionistName = document.getElementById("receptionistName").value.trim();
       const receptionistPhone = receptionistPhoneEl.value.trim();
       const relationship = document.getElementById("relationship").value;
@@ -893,7 +929,6 @@
       const consultationTopic = document.getElementById("consultationTopic").value;
       const detailsVal = details.value.trim();
 
-      // ---- 필수값 + 형식 검증 ----
       let hasError = false;
 
       markInvalid(document.getElementById("clientName"), !clientName);
@@ -930,11 +965,6 @@
       markInvalid(receivedTimeEl, !receivedISO);
       if (!receivedISO) hasError = true;
 
-      if (hasError) {
-        showStatus("error", "입력값을 다시 확인해주세요. 빨간색으로 표시된 항목을 채워주세요.");
-        return;
-      }
-
       const payload = {
         received_at: receivedISO,
         appointment_at: appointmentISO,
@@ -951,13 +981,48 @@
         counsel_topic: consultationTopic
       };
 
+      return { hasError, payload };
+    }
+
+    // ===== 9) 등록(신규) 처리 =====
+    const form = document.getElementById("consultForm");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hideStatus();
+      hideLookupMsg();
+
+      if (mode === "loaded") {
+        // 등록 버튼은 이 모드에서 비활성화되어 있지만, 이중 방어
+        showStatus("error", "조회한 기존 데이터를 수정 중입니다. 신규 등록하려면 먼저 초기화를 눌러주세요.");
+        return;
+      }
+
+      if (!sb) {
+        showStatus("error", "저장 서버(Supabase) 연결에 실패했습니다. 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
+      // 로그인 상태가 아니면 등록을 진행하지 않음 (버튼은 잠겨있지만 이중 방어)
+      if (!isLoggedIn()) {
+        showStatus("error", "로그인이 필요합니다. 메인화면에서 먼저 로그인해주세요.");
+        updateLoginGate();
+        return;
+      }
+
+      const { hasError, payload } = collectAndValidateFormData();
+      if (hasError) {
+        showStatus("error", "입력값을 다시 확인해주세요. 빨간색으로 표시된 항목을 채워주세요.");
+        return;
+      }
+
       submitBtn.disabled = true;
       submitBtn.textContent = "등록 중...";
 
       const { error } = await sb.from(TABLE_NAME).insert([payload]);
 
-      submitBtn.disabled = !isLoggedIn() ? true : false;
       submitBtn.textContent = "▣ 등록";
+      updateLoginGate();
 
       if (error) {
         console.error(error);
@@ -966,128 +1031,79 @@
       }
 
       showStatus("success", "접수 상담이 정상적으로 등록되었습니다.");
-      form.reset();
-      detailsCounter.textContent = "0 / 1000";
-      reservationPreviewEl.textContent = "예약일과 시간을 선택하면 여기에 표시됩니다.";
-      setReceivedDefaultToNow();
+      resetFormToNewMode();
     });
 
-    // ===== 9) 접수 상담 조회 (내담자명 + 연락처 정확히 일치하는 기록 검색) =====
-    const lookupNameEl = document.getElementById("lookupName");
-    const lookupPhoneEl = document.getElementById("lookupPhone");
-    const lookupBtn = document.getElementById("lookupBtn");
-    const lookupMsgEl = document.getElementById("lookupMsg");
-    const lookupResultListEl = document.getElementById("lookupResultList");
-    const lookupDetailEl = document.getElementById("lookupDetail");
+    // ===== 10) 접수 상담 조회 → 폼에 채우기 → 수정 후 저장 =====
 
-    attachPhoneFormatter(lookupPhoneEl);
-    lookupNameEl.addEventListener("input", () => markInvalid(lookupNameEl, false));
-    lookupPhoneEl.addEventListener("input", () => markInvalid(lookupPhoneEl, false));
+    function populateFormFromRecord(row) {
+      const receivedParts = isoToKSTParts(row.received_at);
+      if (receivedParts) {
+        receivedDateEl.value = receivedParts.date;
+        setTimeSelectValue(receivedTimeEl, receivedParts.time);
+      }
+      const apptParts = isoToKSTParts(row.appointment_at);
+      if (apptParts) {
+        reservationDateEl.value = apptParts.date;
+        setTimeSelectValue(reservationTimeEl, apptParts.time);
+      }
+      updateReceivedPreview();
+      updateReservationPreview();
 
-    function showLookupMsg(type, message) {
-      lookupMsgEl.className = "statusMsg show " + type;
-      lookupMsgEl.textContent = message;
-    }
-    function hideLookupMsg() {
-      lookupMsgEl.className = "statusMsg";
-      lookupMsgEl.textContent = "";
-    }
+      document.getElementById("receptionistName").value = row.receptionist_name || "";
+      receptionistPhoneEl.value = row.receptionist_phone || "";
+      if (row.relationship) document.getElementById("relationship").value = row.relationship;
+      document.getElementById("clientName").value = row.client_name || "";
+      if (row.sex_code) document.getElementById("gender").value = row.sex_code;
+      clientPhoneEl.value = row.client_phone || "";
+      birthDateEl.value = row.Birth_date || "";
+      if (row.client_job) document.getElementById("job").value = row.client_job;
+      if (row.counsel_client_type) document.getElementById("consultationTarget").value = row.counsel_client_type;
+      if (row.counsel_topic) document.getElementById("consultationTopic").value = row.counsel_topic;
+      details.value = row.receptionist_content || "";
+      detailsCounter.textContent = `${details.value.length} / 1000`;
 
-    function escapeHTML(str) {
-      if (str === null || str === undefined || str === "") return "";
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    }
-
-    function formatKST(iso) {
-      if (!iso) return "-";
-      const d = new Date(iso);
-      if (isNaN(d.getTime())) return "-";
-      const parts = new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Asia/Seoul",
-        year: "numeric", month: "2-digit", day: "2-digit",
-        hour: "2-digit", minute: "2-digit", hour12: false
-      }).formatToParts(d);
-      const map = {};
-      parts.forEach(p => map[p.type] = p.value);
-      const dateStr = `${map.year}-${map.month}-${map.day}`;
-      const dObj = new Date(dateStr + "T00:00:00");
-      const dayLabel = DAY_KR[dObj.getDay()];
-      const hour = parseInt(map.hour, 10);
-      const ampm = hour < 12 ? "오전" : "오후";
-      return `${dateStr}(${dayLabel}) ${map.hour}:${map.minute}(${ampm})`;
+      clearAllInvalid();
+      loadedRecordId = row.id;
+      setMode("loaded");
     }
 
-    lookupBtn.addEventListener("click", async () => {
-      hideLookupMsg();
-      lookupResultListEl.style.display = "none";
-      lookupResultListEl.innerHTML = "";
-      lookupDetailEl.style.display = "none";
-      lookupDetailEl.innerHTML = "";
-
-      if (!sb) {
-        showLookupMsg("error", "조회 서버(Supabase) 연결에 실패했습니다. 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.");
-        return;
+    function proceedWithRecords(rows) {
+      lookupSelectionAreaEl.style.display = "none";
+      lookupSelectionAreaEl.innerHTML = "";
+      if (rows.length === 1) {
+        populateFormFromRecord(rows[0]);
+        showLookupMsg("success", "조회 결과를 불러왔습니다. 내용을 확인/수정한 뒤 저장 버튼을 눌러주세요.");
+      } else {
+        showSessionSelection(rows);
       }
+    }
 
-      if (!isLoggedIn()) {
-        showLookupMsg("error", "로그인이 필요합니다. 메인화면에서 먼저 로그인해주세요.");
-        return;
-      }
+    function showPhoneSelection(rows) {
+      const phones = [...new Set(rows.map((r) => r.client_phone))];
+      let html = `<div class="lookup-result-count">동일한 이름의 내담자가 여러 명 있습니다. 연락처를 선택해주세요.</div>`;
+      phones.forEach((phone) => {
+        const count = rows.filter((r) => r.client_phone === phone).length;
+        html += `
+          <div class="lookup-item" data-phone="${escapeHTML(phone)}">
+            <div class="lookup-item-date">${escapeHTML(phone)}</div>
+            <div class="lookup-item-sub">접수 기록 ${count}건</div>
+          </div>`;
+      });
+      lookupSelectionAreaEl.innerHTML = html;
+      lookupSelectionAreaEl.style.display = "block";
 
-      const name = lookupNameEl.value.trim();
-      const phone = lookupPhoneEl.value.trim();
+      lookupSelectionAreaEl.querySelectorAll(".lookup-item").forEach((el) => {
+        el.addEventListener("click", () => {
+          const phone = el.getAttribute("data-phone");
+          const filtered = rows.filter((r) => r.client_phone === phone);
+          proceedWithRecords(filtered);
+        });
+      });
+    }
 
-      let hasErr = false;
-      markInvalid(lookupNameEl, !name);
-      if (!name) hasErr = true;
-
-      const phoneOk = isValidPhone(phone);
-      markInvalid(lookupPhoneEl, !phoneOk);
-      if (!phoneOk) hasErr = true;
-
-      if (hasErr) {
-        showLookupMsg("error", "내담자명과 연락처(형식: 010-0000-0000)를 모두 정확히 입력해주세요.");
-        return;
-      }
-
-      lookupBtn.disabled = true;
-      const originalText = lookupBtn.textContent;
-      lookupBtn.textContent = "조회 중...";
-
-      const { data, error } = await sb
-        .from(TABLE_NAME)
-        .select(
-          "id, received_at, appointment_at, receptionist_name, receptionist_phone, relationship, receptionist_content, client_name, client_phone, Birth_date, sex_code, client_job, counsel_client_type, counsel_topic"
-        )
-        .eq("client_name", name)
-        .eq("client_phone", phone)
-        .order("received_at", { ascending: false });
-
-      lookupBtn.disabled = !isLoggedIn() ? true : false;
-      lookupBtn.textContent = originalText;
-
-      if (error) {
-        console.error(error);
-        showLookupMsg("error", "조회 중 오류가 발생했습니다: " + error.message);
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        showLookupMsg("error", "일치하는 접수 기록이 없습니다.");
-        return;
-      }
-
-      renderLookupList(data);
-    });
-
-    function renderLookupList(rows) {
-      lookupDetailEl.style.display = "none";
-      lookupDetailEl.innerHTML = "";
-
-      let html = `<div class="lookup-result-count">총 ${rows.length}건 조회됨 (최신순)</div>`;
+    function showSessionSelection(rows) {
+      let html = `<div class="lookup-result-count">총 ${rows.length}건의 접수 기록이 있습니다. 하나를 선택해주세요.</div>`;
       rows.forEach((row, idx) => {
         const target = targetMap[row.counsel_client_type] || row.counsel_client_type || "-";
         const topic = topicMap[row.counsel_topic] || row.counsel_topic || "-";
@@ -1097,52 +1113,141 @@
             <div class="lookup-item-sub">상담대상: ${escapeHTML(target)} · 상담주제: ${escapeHTML(topic)}</div>
           </div>`;
       });
-      lookupResultListEl.innerHTML = html;
-      lookupResultListEl.style.display = "block";
+      lookupSelectionAreaEl.innerHTML = html;
+      lookupSelectionAreaEl.style.display = "block";
 
-      lookupResultListEl.querySelectorAll(".lookup-item").forEach((el) => {
+      lookupSelectionAreaEl.querySelectorAll(".lookup-item").forEach((el) => {
         el.addEventListener("click", () => {
           const idx = parseInt(el.getAttribute("data-idx"), 10);
-          renderLookupDetail(rows[idx]);
+          lookupSelectionAreaEl.style.display = "none";
+          lookupSelectionAreaEl.innerHTML = "";
+          populateFormFromRecord(rows[idx]);
+          showLookupMsg("success", "조회 결과를 불러왔습니다. 내용을 확인/수정한 뒤 저장 버튼을 눌러주세요.");
         });
       });
     }
 
-    function renderLookupDetail(row) {
-      lookupResultListEl.style.display = "none";
+    async function handleLookup() {
+      hideLookupMsg();
+      hideStatus();
+      lookupSelectionAreaEl.style.display = "none";
+      lookupSelectionAreaEl.innerHTML = "";
 
-      const sexName = sexMap[row.sex_code] || row.sex_code || "-";
-      const jobName = jobMap[row.client_job] || row.client_job || "-";
-      const targetName = targetMap[row.counsel_client_type] || row.counsel_client_type || "-";
-      const topicName = topicMap[row.counsel_topic] || row.counsel_topic || "-";
+      if (!sb) {
+        showLookupMsg("error", "조회 서버(Supabase) 연결에 실패했습니다. 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.");
+        return;
+      }
+      if (!isLoggedIn()) {
+        showLookupMsg("error", "로그인이 필요합니다. 메인화면에서 먼저 로그인해주세요.");
+        return;
+      }
 
-      const html = `
-        <div class="back-link" id="lookupBackBtn">‹ 목록으로 돌아가기</div>
-        <div class="detail-grid">
-          <div class="detail-row"><span class="k">접수일시</span><span class="v">${formatKST(row.received_at)}</span></div>
-          <div class="detail-row"><span class="k">예약일시</span><span class="v">${formatKST(row.appointment_at)}</span></div>
-          <div class="detail-row"><span class="k">접수자명</span><span class="v">${escapeHTML(row.receptionist_name) || "-"}</span></div>
-          <div class="detail-row"><span class="k">접수자<br>연락처</span><span class="v">${escapeHTML(row.receptionist_phone) || "-"}</span></div>
-          <div class="detail-row"><span class="k">내담자<br>관계</span><span class="v">${escapeHTML(row.relationship) || "-"}</span></div>
-          <div class="detail-row"><span class="k">내담자명</span><span class="v">${escapeHTML(row.client_name)}</span></div>
-          <div class="detail-row"><span class="k">성별</span><span class="v">${escapeHTML(sexName)}</span></div>
-          <div class="detail-row"><span class="k">연락처</span><span class="v">${escapeHTML(row.client_phone)}</span></div>
-          <div class="detail-row"><span class="k">생년월일</span><span class="v">${escapeHTML(row.Birth_date) || "-"}</span></div>
-          <div class="detail-row"><span class="k">직업</span><span class="v">${escapeHTML(jobName)}</span></div>
-          <div class="detail-row"><span class="k">상담대상</span><span class="v">${escapeHTML(targetName)}</span></div>
-          <div class="detail-row"><span class="k">상담주제</span><span class="v">${escapeHTML(topicName)}</span></div>
-        </div>
-        <div class="detail-label">접수상담내용</div>
-        <div class="detail-textarea">${escapeHTML(row.receptionist_content) || "작성된 접수상담내용이 없습니다."}</div>
-      `;
-      lookupDetailEl.innerHTML = html;
-      lookupDetailEl.style.display = "block";
+      const name = document.getElementById("clientName").value.trim();
+      const phone = clientPhoneEl.value.trim();
 
-      document.getElementById("lookupBackBtn").addEventListener("click", () => {
-        lookupDetailEl.style.display = "none";
-        lookupResultListEl.style.display = "block";
-      });
+      markInvalid(document.getElementById("clientName"), !name);
+      if (!name) {
+        showLookupMsg("error", "내담자명을 입력해주세요.");
+        return;
+      }
+      markInvalid(document.getElementById("clientName"), false);
+
+      if (phone && !isValidPhone(phone)) {
+        markInvalid(clientPhoneEl, true);
+        showLookupMsg("error", "연락처 형식이 올바르지 않습니다. (예: 010-0000-0000)");
+        return;
+      }
+      markInvalid(clientPhoneEl, false);
+
+      lookupSaveBtn.disabled = true;
+      const originalText = lookupSaveBtn.textContent;
+      lookupSaveBtn.textContent = "조회 중...";
+
+      let query = sb
+        .from(TABLE_NAME)
+        .select(
+          "id, received_at, appointment_at, receptionist_name, receptionist_phone, relationship, receptionist_content, client_name, client_phone, Birth_date, sex_code, client_job, counsel_client_type, counsel_topic"
+        )
+        .eq("client_name", name);
+      if (phone) query = query.eq("client_phone", phone);
+      query = query.order("received_at", { ascending: false });
+
+      const { data, error } = await query;
+
+      lookupSaveBtn.disabled = !isLoggedIn();
+      lookupSaveBtn.textContent = originalText;
+
+      if (error) {
+        console.error(error);
+        showLookupMsg("error", "조회 중 오류가 발생했습니다: " + error.message);
+        return;
+      }
+      if (!data || data.length === 0) {
+        showLookupMsg("error", "일치하는 접수 기록이 없습니다.");
+        return;
+      }
+
+      if (!phone) {
+        const uniquePhones = [...new Set(data.map((r) => r.client_phone))];
+        if (uniquePhones.length > 1) {
+          showPhoneSelection(data);
+          return;
+        }
+      }
+      proceedWithRecords(data);
     }
+
+    async function handleSave() {
+      hideStatus();
+      hideLookupMsg();
+
+      if (!sb) {
+        showStatus("error", "저장 서버(Supabase) 연결에 실패했습니다.");
+        return;
+      }
+      if (!isLoggedIn()) {
+        showStatus("error", "로그인이 필요합니다. 메인화면에서 먼저 로그인해주세요.");
+        return;
+      }
+      if (!loadedRecordId) {
+        showStatus("error", "수정할 기존 데이터가 없습니다. 먼저 조회를 진행해주세요.");
+        return;
+      }
+
+      const { hasError, payload } = collectAndValidateFormData();
+      if (hasError) {
+        showStatus("error", "입력값을 다시 확인해주세요. 빨간색으로 표시된 항목을 채워주세요.");
+        return;
+      }
+
+      const confirmed = window.confirm("저장하시겠습니까? 기존 접수 상담 데이터가 수정됩니다.");
+      if (!confirmed) return;
+
+      lookupSaveBtn.disabled = true;
+      lookupSaveBtn.textContent = "저장 중...";
+
+      const { error } = await sb.from(TABLE_NAME).update(payload).eq("id", loadedRecordId);
+
+      lookupSaveBtn.disabled = !isLoggedIn();
+      lookupSaveBtn.textContent = "💾 저장";
+
+      if (error) {
+        console.error(error);
+        showStatus("error", "수정 저장 중 오류가 발생했습니다: " + error.message);
+        return;
+      }
+
+      showStatus("success", "접수 상담 정보가 수정되었습니다.");
+      resetFormToNewMode();
+    }
+
+    lookupSaveBtn.addEventListener("click", () => {
+      if (mode === "loaded") {
+        handleSave();
+      } else {
+        handleLookup();
+      }
+    });
   </script>
 </body>
 </html>
