@@ -51,9 +51,10 @@ button,input,select,textarea{font:inherit}
 .calScroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
 .calScroll::-webkit-scrollbar{height:5px}
 .calScroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
-.calGrid{display:grid;grid-template-columns:repeat(6, minmax(66px, max-content));grid-auto-rows:minmax(50px, auto);gap:3px;align-items:stretch}
+.calGrid{display:grid;grid-template-columns:repeat(7, minmax(66px, max-content));grid-auto-rows:minmax(50px, auto);gap:3px;align-items:stretch}
 .wd{text-align:center;font-size:10.5px;color:var(--muted);font-weight:900;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:4px}
 .wd.sat{color:var(--blue2)}
+.wd.sun{color:var(--red)}
 .cell{border:1px solid var(--line);border-radius:8px;padding:4px;background:#fff;cursor:pointer}
 .cell.other{background:#fafbfc;color:#c8cdd6}
 .cell.today{box-shadow:inset 0 0 0 1px var(--blue2)}
@@ -156,7 +157,7 @@ button,input,select,textarea{font:inherit}
      <div class="scrollHint">← 옆으로 밀면 전체 요일을 볼 수 있어요 →</div>
      <div class="calScroll">
       <div class="calGrid" id="calGrid">
-       <div class="wd">월</div><div class="wd">화</div><div class="wd">수</div><div class="wd">목</div><div class="wd">금</div><div class="wd sat">토</div>
+       <div class="wd">월</div><div class="wd">화</div><div class="wd">수</div><div class="wd">목</div><div class="wd">금</div><div class="wd sat">토</div><div class="wd sun">일</div>
       </div>
      </div>
      <div class="loadingNote" id="loadingNote" style="display:none">불러오는 중...</div>
@@ -352,10 +353,8 @@ let viewMonth = nowK.getUTCMonth() + 1; // 1-12
 let monthEvents = {}; // { day: [ {time,name,phone,session,status,label,type} ] }
 let selectedDay = null;
 
-// [수정] 달력은 일~토 중 "일요일 칸"을 표시하지 않는 6열(월~토) 구조입니다.
-// 이전 버전은 이번 달/다음 달 날짜를 채울 때 일요일도 그대로 한 칸으로 채워 넣어서,
-// 일요일이 지나갈 때마다 이후 모든 날짜가 한 칸씩 밀리는 누적 버그가 있었습니다.
-// 수정: 이번 달/다음 달 날짜를 채울 때 요일이 일요일(0)이면 해당 날짜는 칸 자체를 만들지 않고 건너뜁니다.
+// 달력은 월~일 7열 구조입니다 (일요일은 맨 끝 칸, 가로 스크롤로 확인).
+// 월요일 시작(월=0 ... 일=6) 기준으로 선행/후행 빈칸을 채우며, 일요일도 정상적으로 한 칸을 차지합니다.
 function buildCalendarCells(year, month){
   const firstDay = new Date(Date.UTC(year, month - 1, 1));
   const jsWeekday = firstDay.getUTCDay(); // 0=일,1=월,...6=토
@@ -369,17 +368,12 @@ function buildCalendarCells(year, month){
   }
 
   for (let d = 1; d <= daysInMonth; d++) {
-    const wd = new Date(Date.UTC(year, month - 1, d)).getUTCDay();
-    if (wd === 0) continue; // 일요일 스킵
     cells.push({ day: d, other: false, key: 'c' + d });
   }
 
   let nextD = 1;
-  while (cells.length % 6 !== 0) {
-    const wd = new Date(Date.UTC(year, month, nextD)).getUTCDay();
-    if (wd !== 0) {
-      cells.push({ day: nextD, other: true, key: 'n' + nextD });
-    }
+  while (cells.length % 7 !== 0) {
+    cells.push({ day: nextD, other: true, key: 'n' + nextD });
     nextD++;
   }
 
@@ -396,7 +390,7 @@ function badgeStyle(status){
 function renderCalendarGrid(){
   document.getElementById('monthLabel').textContent = `${viewYear}년 ${viewMonth}월`;
   const grid = document.getElementById('calGrid');
-  while (grid.children.length > 6) grid.removeChild(grid.lastChild);
+  while (grid.children.length > 7) grid.removeChild(grid.lastChild);
 
   const cells = buildCalendarCells(viewYear, viewMonth);
   const isCurrentMonthShown = (viewYear === nowK.getUTCFullYear() && viewMonth === (nowK.getUTCMonth()+1));
