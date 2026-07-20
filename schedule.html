@@ -65,6 +65,7 @@ button,input,select,textarea{font:inherit}
 .evt.done::before{background:var(--green)}
 .evt.notdone::before{background:var(--muted)}
 .evt.next::before{background:var(--violet)}
+.evt.received::before{background:var(--orange)}
 .legend{display:flex;flex-wrap:wrap;gap:10px;font-size:10.5px;color:var(--muted);font-weight:800;padding:0 2px 4px}
 .legend span{display:inline-flex;align-items:center;gap:4px}
 .legend i{width:6px;height:6px;border-radius:50%;display:inline-block}
@@ -147,6 +148,7 @@ button,input,select,textarea{font:inherit}
 
     <div class="calCard">
      <div class="legend">
+      <span><i style="background:var(--orange)"></i>접수</span>
       <span><i style="background:var(--green)"></i>완료</span>
       <span><i style="background:var(--muted)"></i>미실시</span>
       <span><i style="background:var(--violet)"></i>차기 예약</span>
@@ -387,6 +389,7 @@ function buildCalendarCells(year, month){
 function badgeStyle(status){
   if (status === 'done') return 'background:#dcfce7;color:#15803d;';
   if (status === 'next') return 'background:#ede9fe;color:#6d28d9;';
+  if (status === 'received') return 'background:#ffedd5;color:#c2410c;';
   return 'background:#f1f5f9;color:#475569;';
 }
 
@@ -416,7 +419,7 @@ function renderCalendarGrid(){
     if (!c.other && monthEvents[c.day]) {
       monthEvents[c.day].forEach(ev => {
         const evtDiv = document.createElement('div');
-        const dotClass = ev.status === 'done' ? 'done' : (ev.status === 'next' ? 'next' : 'notdone');
+        const dotClass = ev.status === 'done' ? 'done' : (ev.status === 'received' ? 'received' : (ev.status === 'next' ? 'next' : 'notdone'));
         evtDiv.className = 'evt ' + dotClass;
         const span = document.createElement('span');
         span.className = 'evtName';
@@ -441,11 +444,12 @@ async function loadMonth(year, month){
   const orFilter =
     `and(Consultation_reservation_time.gte.${utcStart},Consultation_reservation_time.lt.${utcEndExclusive}),` +
     `and(Consultation_reservation_time.is.null,appointment_at.gte.${utcStart},appointment_at.lt.${utcEndExclusive}),` +
-    `and(next_reservation_at.gte.${utcStart},next_reservation_at.lt.${utcEndExclusive})`;
+    `and(next_reservation_at.gte.${utcStart},next_reservation_at.lt.${utcEndExclusive}),` +
+    `and(received_at.gte.${utcStart},received_at.lt.${utcEndExclusive})`;
 
   const { data, error } = await sb
     .from('db_sina_counsel')
-    .select('id, client_name, client_phone, Counseling_session, appointment_at, Consultation_reservation_time, Consultation_start_time, Consultation_end_time, next_session_no, next_reservation_at')
+    .select('id, client_name, client_phone, Counseling_session, received_at, appointment_at, Consultation_reservation_time, Consultation_start_time, Consultation_end_time, next_session_no, next_reservation_at')
     .or(orFilter);
 
   loadingNote.style.display = 'none';
@@ -493,8 +497,20 @@ async function loadMonth(year, month){
         sortKey: kstNext.getTime()
       });
     }
+    // 3) 접수 (received_at) - 별도 항목으로 표시 (index 요약의 '접수'와 동일 기준)
+    if (r.received_at && isInRange(r.received_at, utcStart, utcEndExclusive)) {
+      const kstRecv = toKST(r.received_at);
+      pushEvent(kstRecv.getUTCDate(), {
+        time: fmtHHMM(kstRecv),
+        name: r.client_name || '이름없음',
+        phone: r.client_phone || '-',
+        session: '접수',
+        status: 'received',
+        label: '접수',
+        sortKey: kstRecv.getTime()
+      });
+    }
   });
-  Object.keys(grouped).forEach(d => grouped[d].sort((a,b) => a.sortKey - b.sortKey));
 
   monthEvents = grouped;
   renderCalendarGrid();
