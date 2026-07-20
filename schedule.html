@@ -342,17 +342,42 @@ let viewMonth = nowK.getUTCMonth() + 1; // 1-12
 let monthEvents = {}; // { day: [ {time,name,phone,session,status,label} ] }
 let selectedDay = null;
 
+// [수정] 달력은 일~토 중 "일요일 칸"을 표시하지 않는 6열(월~토) 구조입니다.
+// 이전 버전은 이번 달/다음 달 날짜를 채울 때 일요일도 그대로 한 칸으로 채워 넣어서,
+// 일요일이 지나갈 때마다 이후 모든 날짜가 한 칸씩 밀리는 누적 버그가 있었습니다.
+// (예: 7월은 일요일이 3번 있어 7/20이 실제로는 월요일인데 화면엔 3칸 밀려 목요일 자리에 표시됨)
+// 수정: 이번 달/다음 달 날짜를 채울 때 요일이 일요일(0)이면 해당 날짜는 칸 자체를 만들지 않고 건너뜁니다.
 function buildCalendarCells(year, month){
   const firstDay = new Date(Date.UTC(year, month - 1, 1));
-  const jsWeekday = firstDay.getUTCDay();
-  const mondayIndex = (jsWeekday + 6) % 7;
+  const jsWeekday = firstDay.getUTCDay(); // 0=일,1=월,...6=토
+  const mondayIndex = (jsWeekday + 6) % 7; // 월=0,화=1,...토=5,일=6 기준으로 변환
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const prevDaysInMonth = new Date(Date.UTC(year, month - 1, 0)).getUTCDate();
   const cells = [];
-  for (let i = mondayIndex - 1; i >= 0; i--) cells.push({ day: prevDaysInMonth - i, other: true, key: 'p'+(prevDaysInMonth-i) });
-  for (let d = 1; d <= daysInMonth; d++) cells.push({ day: d, other: false, key: 'c'+d });
+
+  // 1) 이전 달 padding: 1일이 속한 주의 월~토 중 이전 달에 해당하는 날짜만 채움
+  //    (이 구간은 항상 연속된 월~토 6일 이내이므로 일요일이 섞일 수 없어 별도 스킵 불필요)
+  for (let i = mondayIndex - 1; i >= 0; i--) {
+    cells.push({ day: prevDaysInMonth - i, other: true, key: 'p' + (prevDaysInMonth - i) });
+  }
+
+  // 2) 이번 달 날짜: 요일이 일요일(0)이면 칸을 만들지 않고 건너뜀
+  for (let d = 1; d <= daysInMonth; d++) {
+    const wd = new Date(Date.UTC(year, month - 1, d)).getUTCDay();
+    if (wd === 0) continue; // 일요일 스킵
+    cells.push({ day: d, other: false, key: 'c' + d });
+  }
+
+  // 3) 다음 달 padding: 전체 칸 수가 6의 배수가 될 때까지 채우되, 일요일은 스킵
   let nextD = 1;
-  while (cells.length % 6 !== 0) { cells.push({ day: nextD, other: true, key: 'n'+nextD }); nextD++; }
+  while (cells.length % 6 !== 0) {
+    const wd = new Date(Date.UTC(year, month, nextD)).getUTCDay(); // month(1-based)를 그대로 넣으면 0-based 다음 달
+    if (wd !== 0) {
+      cells.push({ day: nextD, other: true, key: 'n' + nextD });
+    }
+    nextD++;
+  }
+
   return cells;
 }
 
