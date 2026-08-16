@@ -72,6 +72,19 @@ body{
   background:rgba(255,255,255,.18);
   padding:4px 9px;border-radius:999px;
 }
+.headerRight{
+  flex:0 0 auto;
+  display:flex;align-items:center;gap:6px;
+}
+.logoutBtn{
+  font-size:11px;font-weight:800;
+  background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.5);
+  color:#fff;
+  padding:4px 9px;border-radius:999px;
+  cursor:pointer;
+}
+.logoutBtn:hover{background:rgba(255,255,255,.26)}
 
 .body{
   flex:1;
@@ -229,7 +242,10 @@ body{
       <div class="top">
         <div class="back" id="backBtn">←</div>
         <div class="title">환경설정 · 사용자 관리</div>
-        <div class="badge">관리자</div>
+        <div class="headerRight">
+          <div class="badge">관리자</div>
+          <button class="logoutBtn" id="logoutBtn" type="button">로그아웃</button>
+        </div>
       </div>
 
       <div class="body">
@@ -340,19 +356,77 @@ body{
     console.error("Supabase 초기화 실패:", err);
   }
 
-  (async function guardSettingsPage(){
-    if (!sb) { window.location.href = 'index.html'; return; }
-    const { data } = await sb.auth.getSession();
-    if (!data.session) {
-      // 로그인 안 된 상태로 직접 접근 시 메인으로 돌려보냄
-      window.location.href = 'index.html';
-      return;
-    }
+  let guardResolved = false;
+
+  function showSettingsScreen(session){
     const emailEl = document.getElementById('myEmail');
-    if (emailEl && data.session.user && data.session.user.email) {
-      emailEl.textContent = data.session.user.email;
+    if (emailEl && session && session.user && session.user.email) {
+      emailEl.textContent = session.user.email;
     }
+  }
+
+  function kickToLogin(){
+    window.location.href = 'index.html';
+  }
+
+  (function guardSettingsPage(){
+    if (!sb) { kickToLogin(); return; }
+
+    // 세션 상태 변화(초기 복원 포함)를 신뢰할 수 있는 기준으로 사용.
+    // 페이지 진입 직후 getSession()만 믿고 바로 판단하면,
+    // 세션 복원이 끝나기 전에 "로그인 안 됨"으로 오판해서
+    // 화면을 나갔다 들어올 때마다 자동 로그아웃되는 것처럼 보이는 문제가 있었음.
+    sb.auth.onAuthStateChange((event, session) => {
+      guardResolved = true;
+      if (session) {
+        showSettingsScreen(session);
+      } else if (event !== 'INITIAL_SESSION' || !session) {
+        // 명시적으로 세션이 없다고 확정된 경우에만 이동
+        // (로그아웃 버튼 클릭 시에도 이 경로로 자연스럽게 처리됨)
+        kickToLogin();
+      }
+    });
+
+    // 혹시 onAuthStateChange가 지연될 경우를 대비한 안전장치 (최대 1.5초 대기 후 재확인)
+    setTimeout(async () => {
+      if (guardResolved) return;
+      const { data } = await sb.auth.getSession();
+      if (data.session) {
+        guardResolved = true;
+        showSettingsScreen(data.session);
+      } else {
+        kickToLogin();
+      }
+    }, 1500);
   })();
+
+  // ===== 명시적 로그아웃 버튼 =====
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    if (!confirm('로그아웃 하시겠습니까?')) return;
+    if (sb) await sb.auth.signOut();
+    window.location.href = 'index.html';
+  });
+
+  // ===== 10분(600,000ms) 미사용 시 자동 로그아웃 =====
+  const IDLE_LIMIT_MS = 10 * 60 * 1000;
+  let idleTimer = null;
+
+  function resetIdleTimer(){
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(handleIdleTimeout, IDLE_LIMIT_MS);
+  }
+
+  async function handleIdleTimeout(){
+    if (sb) await sb.auth.signOut();
+    alert('10분간 활동이 없어 자동 로그아웃 되었습니다.');
+    window.location.href = 'index.html';
+  }
+
+  ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'].forEach(evt => {
+    document.addEventListener(evt, resetIdleTimer, { passive: true });
+  });
+
+  resetIdleTimer(); // 페이지 진입 시 타이머 시작
 </script>
 </body>
 </html>
