@@ -156,6 +156,35 @@ button,input,select,textarea{
     color:#fff;
     border-color:var(--green)}
 
+.headerActions{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    gap:6px}
+
+.settingsBtn{
+    flex:0 0 auto;
+    width:26px;
+    height:26px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.55);
+    color:#fff;
+    border-radius:999px;
+    cursor:pointer;
+    font-size:13px;
+    line-height:1;
+    backdrop-filter:blur(2px);
+    transition:background .15s ease}
+
+.settingsBtn:active{
+    transform:translateY(1px)}
+
+.settingsBtn:hover{
+    background:rgba(255,255,255,.28)}
+
 .content{
     height:calc(100% - 92px - 84px);
     overflow:auto;
@@ -920,10 +949,15 @@ button,input,select,textarea{
          </h1>
         </div>
        </div>
-       <button class="loginBtn" id="loginTrigger" type="button" onclick="openLoginModal()">
-        <span id="loginIcon"><i class="ti ti-lock" aria-hidden="true"></i></span>
-        <span id="loginLabel">로그인</span>
-       </button>
+       <div class="headerActions">
+        <button class="loginBtn" id="loginTrigger" type="button" onclick="openLoginModal()">
+         <span id="loginIcon"><i class="ti ti-lock" aria-hidden="true"></i></span>
+         <span id="loginLabel">로그인</span>
+        </button>
+        <button class="settingsBtn" id="settingsTrigger" type="button" onclick="openSettings()" title="환경설정" style="display:none;">
+         <i class="ti ti-settings" aria-hidden="true"></i>
+        </button>
+       </div>
       </div>
      </header>
      <section class="content">
@@ -1206,8 +1240,21 @@ button,input,select,textarea{
         loginIcon.innerHTML = '<i class="ti ti-lock" aria-hidden="true"></i>';
         loginLabel.textContent = '로그인';
       }
+      // 환경설정(톱니바퀴) 버튼: 로그인 상태일 때만 노출
+      // ※ 현재는 계정=1개(관리자)뿐이라 "로그인 여부"로만 판단.
+      //    추후 사용자가 여러 명(staff_profiles.role) 생기면 role==='admin' 조건으로 교체 필요.
+      if (settingsTrigger) {
+        settingsTrigger.style.display = isLoggedIn() ? 'flex' : 'none';
+      }
       updateMenuLockState();
       updateSummaryCard();
+    }
+
+    // ===== 환경설정 화면 이동 =====
+    const settingsTrigger = document.getElementById('settingsTrigger');
+    function openSettings(){
+      if (!isLoggedIn()) return; // 버튼이 숨겨져 있어도 방어적으로 한 번 더 체크
+      window.location.href = 'admin_settings.html';
     }
 
     // ===== 메뉴 잠금 처리: 로그인 전에는 모든 메뉴(홈 포함) 기능 정지 =====
