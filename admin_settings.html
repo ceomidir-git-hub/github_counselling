@@ -112,6 +112,17 @@ body{
 .statusTag.active{background:#eafff0;color:#15803d}
 .statusTag.inactive{background:#fef2f2;color:var(--red)}
 
+.userCard.adminPinned{
+  border:1.5px solid #bfdbfe;
+  background:linear-gradient(180deg,#f5f9ff,#ffffff);
+}
+.roleTag.adminRole{
+  background:#fff7ed;color:#c2410c;
+}
+.pinnedNote{
+  font-size:11px;color:#94a3b8;margin-top:6px;line-height:1.5;
+}
+
 .userCard .infoLine{
   font-size:12.5px;color:var(--muted);
   display:flex;gap:14px;margin-bottom:2px;
@@ -222,17 +233,28 @@ body{
       </div>
 
       <div class="body">
-        <div class="sectionLabel">등록된 사용자 (0)</div>
+        <div class="sectionLabel">관리자 계정</div>
+
+        <div class="userCard adminPinned">
+          <div class="row1">
+            <div class="name">본인 <span class="roleTag adminRole">👑 최초 관리자</span></div>
+            <div class="statusTag active">활성</div>
+          </div>
+          <div class="infoLine"><i class="ti ti-mail"></i><span id="myEmail">로그인 계정 이메일 표시 예정</span></div>
+          <div class="pinnedNote">이 시스템을 시작한 계정입니다. 비활성화할 수 없습니다.</div>
+        </div>
+
+        <div class="sectionLabel" style="margin-top:16px;">초대한 사용자 (0)</div>
 
         <div class="emptyState" id="emptyState">
           <div style="font-size:30px;margin-bottom:8px;">📭</div>
           <p style="margin:0;font-size:12.5px;color:var(--muted);line-height:1.6;">
-            아직 등록된 사용자가 없습니다.<br>
+            아직 초대한 사용자가 없습니다.<br>
             아래 "＋ 사용자 등록" 버튼으로 첫 사용자를 등록해 주세요.
           </p>
         </div>
 
-        <p class="note">비활성화된 계정은 로그인이 차단되며,<br>언제든 재활성화할 수 있습니다.</p>
+        <p class="note">초대된 사용자는 본인이 만든 데이터만 조회·수정할 수 있으며,<br>관리자를 포함한 다른 누구도 그 데이터를 볼 수 없습니다.</p>
       </div>
 
       <button class="fab" id="openAddBtn">＋ 사용자 등록</button>
@@ -324,6 +346,11 @@ body{
     if (!data.session) {
       // 로그인 안 된 상태로 직접 접근 시 메인으로 돌려보냄
       window.location.href = 'index.html';
+      return;
+    }
+    const emailEl = document.getElementById('myEmail');
+    if (emailEl && data.session.user && data.session.user.email) {
+      emailEl.textContent = data.session.user.email;
     }
   })();
 </script>
